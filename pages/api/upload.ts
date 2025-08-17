@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File as FormidableFile } from 'formidable';
+import formidable from 'formidable';
+import type { File as FormidableFile, Files as FormidableFiles } from 'formidable';
 import fs from 'fs';
 import { supabase } from '@/lib/supabase';
 import { parseExcelToRows } from '@/utils/parseExcel';
 
-// 关闭 Next 的内置 bodyParser，交给 formidable 处理表单
+// 关闭 Next 自带 bodyParser，交给 formidable
 export const config = { api: { bodyParser: false } };
 
 function pickString(row: Record<string, any>, keys: string[]) {
@@ -15,14 +16,22 @@ function pickString(row: Record<string, any>, keys: string[]) {
   return null;
 }
 
+// 关键修复：把 files.file 的 File | File[] | undefined 收窄为单个 FormidableFile
 async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile }> {
   const form = formidable({ multiples: false });
   return new Promise((resolve, reject) => {
     form.parse(req, (err, _fields, files) => {
       if (err) return reject(err);
-      const file = files.file as FormidableFile;
+
+      const fset = files as FormidableFiles;
+      const maybe = fset['file'] as FormidableFile | FormidableFile[] | undefined;
+
+      let file: FormidableFile | undefined;
+      if (Array.isArray(maybe)) file = maybe[0];
+      else file = maybe;
+
       if (!file) return reject(new Error('No file field "file" found'));
-      resolve({ file });
+      return resolve({ file });
     });
   });
 }
@@ -35,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { file } = await parseForm(req);
     const buf = fs.readFileSync(file.filepath);
 
-    // 2) 解析 Excel/CSV -> 行数据
+    // 2) 解析 Excel/CSV
     const { sheetName, columns, rows } = parseExcelToRows(buf);
 
     // 3) 记录文件元数据
@@ -54,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: `Insert file meta failed: ${fileErr.message}` });
     }
 
-    // 4) 逐行插入（命中 asin_norm 或 url_norm 的任一唯一索引冲突 → 跳过）
+    // 4) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
     let inserted = 0, skipped = 0, invalid = 0;
 
     for (let i = 0; i < rows.length; i++) {
@@ -67,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const payload = {
         file_id: fileRow.id,
-        row_index: i + 2, // 约定：含表头时的数据行 +2 更易回查
+        row_index: i + 2, // 约定：含表头时的数据行 +2 便于回查
         asin,
         url,
         title,
@@ -76,15 +85,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const { error: insErr } = await supabase.from('blackbox_rows').insert(payload);
       if (insErr) {
-        // 23505: unique_violation（asin_norm 或 url_norm 任一重复）
-        if ((insErr as any).code === '23505') { skipped++; continue; }
-        // 其他错误直接抛出，避免静默失败
-        throw insErr;
+        if ((insErr as any).code === '23505') { skipped++; continue; } // 唯一冲突 => 跳过
+        throw insErr; // 其他错误直接抛
       }
       inserted++;
     }
 
-    // 5) 返回结果（可由前端触发 /api/score/apply 计算评分并跳转）
+    // 5) 返回
     return res.status(200).json({
       fileId: fileRow.id,
       stats: { inserted, skipped, invalid, total: rows.length },
