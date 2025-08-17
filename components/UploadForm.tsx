@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,6 +22,7 @@ export default function UploadForm() {
       setMessage(
         `Uploaded: ${fileId} (inserted: ${stats.inserted}, skipped: ${stats.skipped}, invalid: ${stats.invalid})`
       );
+      router.push(`/file/${fileId}?scheme=platform&minScore=55`);
     } catch (err: any) {
       setMessage(err.message);
     }
