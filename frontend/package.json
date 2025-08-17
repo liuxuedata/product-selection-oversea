@@ -1,0 +1,11 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "lint": "echo 'frontend lint'",
+    "test": "node test.js",
+    "build": "echo 'frontend build'"
+  }
+}
