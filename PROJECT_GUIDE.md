@@ -372,3 +372,173 @@ RLS：若开启 Supabase RLS，请为相关表配置政策，或在服务端使�
 参数编辑器：当前仅做权重滑杆；维度分段（segments）可做弹窗表单编辑。
 
 多文件合并筛选：可增 /api/search 支持跨文件条件查询（价格/评分区间/关键词等）。
+
+
+# PROJECT_GUIDE.md（合并版）
+
+## 1. 项目简介
+本项目是一个综合选品平台，支持 **平台站** 与 **独立站** 两套不同的选品逻辑。  
+- 数据来源：Helium10 BlackBox 导出表格（Excel/CSV）。  
+- 存储层：Supabase PostgreSQL。  
+- 前端框架：Next.js + Vercel 部署。  
+- 功能目标：上传选品表 → 自动计算评分 → 推荐 ≥55 分的产品，并用颜色区分 ≥70 分（绿色）与 55–69.9（橙色）。点击产品行可进入详情页展示完整数据。  
+
+---
+
+## 2. 数据库设计（Supabase SQL 初始化）
+
+```sql
+-- 文件表
+create table if not exists blackbox_files (
+  id uuid primary key default gen_random_uuid(),
+  filename text not null,
+  sheet_name text,
+  row_count int,
+  column_names jsonb,
+  uploaded_by text,
+  uploaded_at timestamptz default now()
+);
+
+-- 行表
+create table if not exists blackbox_rows (
+  id uuid primary key default gen_random_uuid(),
+  file_id uuid not null references blackbox_files(id) on delete cascade,
+  row_index int,
+  asin text,
+  url text,
+  title text,
+  data jsonb not null,
+  inserted_at timestamptz default now(),
+  asin_norm text generated always as (nullif(lower(btrim(asin)), '')) stored,
+  url_norm  text generated always as (nullif(lower(btrim(url)),  '')) stored
+);
+create unique index if not exists uq_blackbox_rows_asin_norm on blackbox_rows(asin_norm) where asin_norm is not null;
+create unique index if not exists uq_blackbox_rows_url_norm  on blackbox_rows(url_norm)  where url_norm  is not null;
+
+-- 打分表
+create table if not exists product_scores (
+  id uuid primary key default gen_random_uuid(),
+  row_id uuid not null references blackbox_rows(id) on delete cascade,
+  platform_score numeric,
+  independent_score numeric,
+  meta jsonb,
+  scored_at timestamptz default now()
+);
+
+-- 评分配置表
+create table if not exists scoring_profiles (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  description text,
+  is_active boolean default false,
+  created_by text,
+  created_at timestamptz default now()
+);
+
+create table if not exists scoring_profile_revisions (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references scoring_profiles(id) on delete cascade,
+  version int not null,
+  params jsonb not null,
+  changelog text,
+  created_by text,
+  created_at timestamptz default now()
+);
+```
+
+---
+
+## 3. 评分标准
+
+### 平台站
+- **85–100**：优质产品 → 重点关注  
+- **70–85**：潜力产品 → 小批量试水  
+- **55–70**：一般产品 → 可少量关注  
+- **<55**：低潜产品 → 不建议  
+
+主要权重：ASIN 销量（0.11）、销量趋势（0.09）、评论数量 & 评分（各 0.09）、卖家数（0.07）、历史销量/同比（各 0.07）。  
+
+### 独立站
+- **85–100**：优质产品  
+- **70–85**：潜力产品  
+- **55–70**：一般产品  
+- **<55**：低潜产品  
+
+主要权重：价格（≥400 满分，权重 0.08）、新品年龄 ≤6 月（权重 0.09）、评论联动（0.12）、卖家数（0.08）、销量趋势/收入等。  
+
+---
+
+## 4. Google Apps Script 脚本（旧流程参考）
+
+- **平台站打分**：`平台选品评分.js`  
+- **独立站打分**：`独立站选品评分.js`  
+- **选品归集**：筛选综合评分 ≥55 的产品，同步到 `recommendation production` Sheet。  
+
+> 现已迁移到 Supabase + Next.js，但评分逻辑保持一致，供 Codex 转换为 `lib/scoring/engine.ts`。
+
+---
+
+## 5. Web 前端设计
+
+### 上传页 `/`
+- Excel 上传 → 调用 `/api/upload`  
+- 自动去重（asin/url），存储入库  
+- 上传后跳转到 `/file/{fileId}?scheme=platform&minScore=55`  
+
+### 文件页 `/file/[fileId]`
+- 表格展示产品：
+- - **≥85 分** → 红色标识 
+  - **70–84.99 ** → 绿色标识  
+  - **55–69.9** → 橙色标识  
+- 支持切换 scoring scheme：platform / independent  
+- 点击行 → 跳 `/product/[rowId]`  
+
+### 产品详情 `/product/[rowId]`
+- 展示：标题、URL（点击跳亚马逊）、价格、销量、收入、评论、卖家数、仓储费用、年龄等完整字段。  
+- 展示两套评分（平台站 / 独立站），并标明等级（优质、潜力、一般、低潜）。  
+
+### 设置页 `/settings`
+- 展示当前参数 JSON（weights & rules）  
+- 支持调整权重（表单输入）  
+- “保存新版本” → 新建 `scoring_profile_revisions`  
+- “应用” → 重新计算全量评分  
+
+---
+
+## 6. 部署要求（Vercel）
+
+- Framework Preset: **Next.js**  
+- Build Command: `next build`  
+- Output Directory: **留空**（Vercel 自动用 `.next`）  
+- 环境变量：  
+  - `NEXT_PUBLIC_SUPABASE_URL`  
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`  
+
+---
+
+## 7. Codex 执行指令
+
+1. 按本文档创建 Next.js + Supabase 项目。  
+2. 文件输出规则：  
+   - 用 `### File: <路径>` 标明  
+   - 紧随代码块完整写出文件内容（不要省略）。  
+3. 必须创建：  
+   - `lib/supabase.ts`  
+   - `lib/scoring/field.ts`  
+   - `lib/scoring/engine.ts`  
+   - `utils/parseExcel.ts`  
+   - `pages/api/upload.ts`  
+   - `pages/file/[id].tsx`  
+   - `pages/product/[id].tsx`  
+   - `pages/settings.tsx`  
+   - `pages/index.tsx`  
+4. 完成后打印 `tree` 目录结构和启动命令。  
+
+---
+
+## 8. 颜色 & 推荐逻辑
+- **score ≥85**：红色徽章 → 推荐重点关注 
+- **70 ≤ score < 85**：绿色徽章 → 推荐重点关注  
+- **55 ≤ score < 70**：橙色徽章 → 潜力观察  
+- **<55**：默认隐藏（仅在详情页可见）  
+
