@@ -54,6 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       skipped = 0,
       invalid = 0;
 
+    const seen = new Set<string>();
+    const validRows: any[] = [];
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       const asin = pickString(r, ['ASIN', 'asin', 'Asin']);
@@ -65,25 +67,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         continue;
       }
 
-      const payload = {
+      const key = asin || url!;
+      if (seen.has(key)) {
+        skipped++;
+        continue;
+      }
+      seen.add(key);
+
+      validRows.push({
         file_id: f.id,
         row_index: i + 2,
         asin,
         url,
         title,
         data: r,
-      };
+      });
+    }
 
-      const { error: insErr } = await supabase.from('blackbox_rows').insert(payload);
+    if (validRows.length) {
+      const { data: insertedRows, error: insErr } = await supabase
+        .from('blackbox_rows')
+        .insert(validRows, { onConflict: 'asin,url', ignoreDuplicates: true })
+        .select('id');
+
       if (insErr) {
-        if ((insErr as any).code === '23505') {
-          skipped++;
-          continue;
-        }
         res.status(500).json({ error: insErr.message });
         return;
       }
-      inserted++;
+
+      inserted = insertedRows?.length || 0;
+      skipped += validRows.length - inserted;
     }
 
     res.status(200).json({ fileId: f.id, stats: { inserted, skipped, invalid } });
