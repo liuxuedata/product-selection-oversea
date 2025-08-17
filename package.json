@@ -1,0 +1,14 @@
+{
+  "name": "product-selection-oversea",
+  "version": "1.0.0",
+  "private": true,
+  "description": "基于跨境站选品",
+  "scripts": {
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
+    "test": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.3.2"
+  }
+}
