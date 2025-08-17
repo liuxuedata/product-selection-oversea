@@ -16,7 +16,10 @@ export default function UploadForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      setMessage(`Uploaded: ${data.fileId}`);
+      const { fileId, stats } = data;
+      setMessage(
+        `Uploaded: ${fileId} (inserted: ${stats.inserted}, skipped: ${stats.skipped}, invalid: ${stats.invalid})`
+      );
     } catch (err: any) {
       setMessage(err.message);
     }

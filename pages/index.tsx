@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import UploadForm from '../components/UploadForm';
+import UploadForm from '@/components/UploadForm';
 
 export default function Home() {
   return (
