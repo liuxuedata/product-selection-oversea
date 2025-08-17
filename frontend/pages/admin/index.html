@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+</head>
+<body>
+  <div id="auth"></div>
+  <div id="dashboard" style="display:none;">
+    <h1>Admin Dashboard</h1>
+    <div>New Products: <span id="new-products"></span></div>
+    <div>Visits: <span id="visits"></span></div>
+    <div>Conversion Rate: <span id="conversion-rate"></span></div>
+  </div>
+  <script>
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      const t = prompt('Enter admin token');
+      if (t) localStorage.setItem('adminToken', t);
+    }
+    const authToken = localStorage.getItem('adminToken');
+    if (authToken !== 'admin123') {
+      document.getElementById('auth').innerText = 'Unauthorized';
+    } else {
+      document.getElementById('dashboard').style.display = 'block';
+      fetch('/admin/stats', { headers: { Authorization: 'Bearer ' + authToken } })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('new-products').innerText = data.newProducts;
+          document.getElementById('visits').innerText = data.visits;
+          document.getElementById('conversion-rate').innerText = data.conversionRate;
+        });
+    }
+  </script>
+</body>
+</html>
