@@ -22,7 +22,7 @@ export default function UploadForm() {
       setMessage(
         `Uploaded: ${fileId} (inserted: ${stats.inserted}, skipped: ${stats.skipped}, invalid: ${stats.invalid})`
       );
-      router.push(`/recommended/${fileId}`);
+      router.push(`/recommendations`);
     } catch (err: any) {
       setMessage(err.message);
     }
