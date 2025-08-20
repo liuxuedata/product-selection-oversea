@@ -13,17 +13,50 @@ export default function ProductPage() {
       .then(data => setRow(data.row));
   }, [id]);
   if (!row) return <p>Loading...</p>;
+  const entries = Object.entries(row.data || {}).filter(
+    ([k]) => !['ASIN', 'URL', 'Product Title'].includes(k)
+  );
   return (
     <>
       <Head>
         <title>{row.title}</title>
       </Head>
-      <main className="p-4 space-y-2">
+      <main className="p-4 space-y-4">
         <h1 className="text-2xl font-bold">{row.title}</h1>
-        <a href={row.url} className="text-blue-600" target="_blank" rel="noopener noreferrer">
-          {row.url}
-        </a>
-        <pre className="whitespace-pre-wrap bg-gray-100 p-4 border">{JSON.stringify(row.data, null, 2)}</pre>
+        {row.url && (
+          <a
+            href={row.url}
+            className="text-blue-600"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {row.url}
+          </a>
+        )}
+        <div className="border rounded p-4">
+          <table className="min-w-full">
+            <tbody>
+              <tr>
+                <th className="text-left pr-4">ASIN</th>
+                <td>{row.asin || row.data?.ASIN}</td>
+              </tr>
+              <tr>
+                <th className="text-left pr-4">Platform Score</th>
+                <td>{row.platform_score?.toFixed?.(2) ?? ''}</td>
+              </tr>
+              <tr>
+                <th className="text-left pr-4">Independent Score</th>
+                <td>{row.independent_score?.toFixed?.(2) ?? ''}</td>
+              </tr>
+              {entries.map(([k, v]) => (
+                <tr key={k}>
+                  <th className="text-left pr-4">{k}</th>
+                  <td>{String(v)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </main>
     </>
   );

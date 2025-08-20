@@ -22,7 +22,7 @@ export default function UploadForm() {
       setMessage(
         `Uploaded: ${fileId} (inserted: ${stats.inserted}, skipped: ${stats.skipped}, invalid: ${stats.invalid})`
       );
-      router.push(`/file/${fileId}?scheme=platform&minScore=55`);
+      router.push(`/recommended/${fileId}`);
     } catch (err: any) {
       setMessage(err.message);
     }

@@ -2,22 +2,20 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState, useMemo } from 'react';
 
-export default function FilePage() {
+export default function RecommendedPage() {
   const router = useRouter();
-  const { id, scheme = 'platform', minScore = '0' } = router.query as {
-    id?: string;
-    scheme?: string;
-    minScore?: string;
-  };
+  const { id } = router.query as { id?: string };
   const [rows, setRows] = useState<any[]>([]);
+
   useEffect(() => {
     if (!id) return;
     fetch(`/api/files/${id}/rows`)
       .then(res => res.json())
       .then(data => setRows(data.rows || []));
   }, [id]);
-  const scoreKey = `${scheme}_score` as 'platform_score' | 'independent_score';
-  const min = Number(minScore);
+
+  const scoreKey = 'platform_score';
+  const min = 55;
 
   const columns = useMemo(() => {
     const set = new Set<string>();
@@ -36,10 +34,10 @@ export default function FilePage() {
   return (
     <>
       <Head>
-        <title>File {id}</title>
+        <title>Recommended Products for File {id}</title>
       </Head>
       <main className="p-4">
-        <h1 className="text-xl font-bold mb-4">File {id}</h1>
+        <h1 className="text-xl font-bold mb-4">Recommended Products for File {id}</h1>
         <table className="min-w-full border">
           <thead>
             <tr className="bg-gray-100">
@@ -100,3 +98,4 @@ export default function FilePage() {
     </>
   );
 }
+
