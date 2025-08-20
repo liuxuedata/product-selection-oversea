@@ -41,10 +41,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1) 解析上传
-    const { file, fields } = await parseForm(req);
+    const { file } = await parseForm(req);
     const buf = fs.readFileSync(file.filepath);
-    const rawType = fields.docType as string | string[] | undefined;
-    const docType = Array.isArray(rawType) ? rawType[0] : rawType || 'unknown';
 
     // 2) 解析 Excel/CSV
     const { sheetName, columns, rows } = parseExcelToRows(buf);
@@ -57,7 +55,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sheet_name: sheetName,
         row_count: rows.length,
         column_names: columns,
-        doc_type: docType,
       })
       .select('id')
       .single();
