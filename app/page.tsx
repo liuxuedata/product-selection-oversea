@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
 export default function Home() {
-  redirect("/products");
+  return <div className="p-6">首页</div>;
 }
-
