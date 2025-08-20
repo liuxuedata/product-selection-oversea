@@ -26,7 +26,7 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
         `Uploaded: ${fileId} (inserted: ${stats.inserted}, skipped: ${stats.skipped}, invalid: ${stats.invalid})`
       );
       onUploaded?.();
-      router.push(`/recommendations`);
+      router.push(`/recommendations/platform`);
     } catch (err: any) {
       setMessage(err.message);
     }
