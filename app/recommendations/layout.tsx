@@ -9,7 +9,7 @@ const tabs = [
 ];
 
 export default function RecommendationsLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-semibold">推荐产品</h1>
