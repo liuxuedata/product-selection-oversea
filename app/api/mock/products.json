@@ -26,7 +26,9 @@
       "image_count": 3,
       "variant_count": 5,
       "score": 19,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 19,
+      "independent_score": 17.59420908414851
     },
     {
       "id": "prod-2",
@@ -54,7 +56,9 @@
       "image_count": 3,
       "variant_count": 4,
       "score": 76.8,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 76.8,
+      "independent_score": 85.82767897975026
     },
     {
       "id": "prod-3",
@@ -82,7 +86,9 @@
       "image_count": 4,
       "variant_count": 5,
       "score": 99.3,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 99.3,
+      "independent_score": 96.01304412540456
     },
     {
       "id": "prod-4",
@@ -110,7 +116,9 @@
       "image_count": 6,
       "variant_count": 4,
       "score": 15.2,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 15.2,
+      "independent_score": 24.014397665700553
     },
     {
       "id": "prod-5",
@@ -138,7 +146,9 @@
       "image_count": 6,
       "variant_count": 5,
       "score": 17.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 17.7,
+      "independent_score": 23.29654804517313
     },
     {
       "id": "prod-6",
@@ -166,7 +176,9 @@
       "image_count": 6,
       "variant_count": 2,
       "score": 63.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 63.4,
+      "independent_score": 53.40224165118248
     },
     {
       "id": "prod-7",
@@ -194,7 +206,9 @@
       "image_count": 8,
       "variant_count": 1,
       "score": 42.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 42.9,
+      "independent_score": 46.849535984144396
     },
     {
       "id": "prod-8",
@@ -222,7 +236,9 @@
       "image_count": 5,
       "variant_count": 3,
       "score": 2.6,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 2.6,
+      "independent_score": 3.403752474145597
     },
     {
       "id": "prod-9",
@@ -250,7 +266,9 @@
       "image_count": 1,
       "variant_count": 3,
       "score": 35.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 35.9,
+      "independent_score": 45.45809297576754
     },
     {
       "id": "prod-10",
@@ -278,7 +296,9 @@
       "image_count": 7,
       "variant_count": 1,
       "score": 41.6,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 41.6,
+      "independent_score": 32.38318471176874
     },
     {
       "id": "prod-11",
@@ -306,7 +326,9 @@
       "image_count": 10,
       "variant_count": 5,
       "score": 28.6,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 28.6,
+      "independent_score": 26.916463475447394
     },
     {
       "id": "prod-12",
@@ -334,7 +356,9 @@
       "image_count": 2,
       "variant_count": 1,
       "score": 21.6,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 21.6,
+      "independent_score": 11.70965199276301
     },
     {
       "id": "prod-13",
@@ -362,7 +386,9 @@
       "image_count": 9,
       "variant_count": 2,
       "score": 10.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 10.4,
+      "independent_score": 12.359798205708353
     },
     {
       "id": "prod-14",
@@ -390,7 +416,9 @@
       "image_count": 8,
       "variant_count": 3,
       "score": 74.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 74.9,
+      "independent_score": 77.88550186926992
     },
     {
       "id": "prod-15",
@@ -418,7 +446,9 @@
       "image_count": 9,
       "variant_count": 5,
       "score": 52.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 52.7,
+      "independent_score": 44.32675421632833
     },
     {
       "id": "prod-16",
@@ -446,7 +476,9 @@
       "image_count": 4,
       "variant_count": 1,
       "score": 53.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 53.4,
+      "independent_score": 59.036490534583294
     },
     {
       "id": "prod-17",
@@ -474,7 +506,9 @@
       "image_count": 4,
       "variant_count": 5,
       "score": 73.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 73.5,
+      "independent_score": 69.78882300605083
     },
     {
       "id": "prod-18",
@@ -502,7 +536,9 @@
       "image_count": 3,
       "variant_count": 3,
       "score": 17.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 17.5,
+      "independent_score": 18.977253536667114
     },
     {
       "id": "prod-19",
@@ -530,7 +566,9 @@
       "image_count": 5,
       "variant_count": 3,
       "score": 20.8,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 20.8,
+      "independent_score": 14.35139478934827
     },
     {
       "id": "prod-20",
@@ -558,7 +596,9 @@
       "image_count": 4,
       "variant_count": 3,
       "score": 69.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 69.5,
+      "independent_score": 63.89959890956217
     },
     {
       "id": "prod-21",
@@ -586,7 +626,9 @@
       "image_count": 6,
       "variant_count": 3,
       "score": 92.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 92.7,
+      "independent_score": 88.83699759968128
     },
     {
       "id": "prod-22",
@@ -614,7 +656,9 @@
       "image_count": 7,
       "variant_count": 5,
       "score": 37.2,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 37.2,
+      "independent_score": 32.09657469501457
     },
     {
       "id": "prod-23",
@@ -642,7 +686,9 @@
       "image_count": 4,
       "variant_count": 3,
       "score": 26.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 26.5,
+      "independent_score": 30.908921676793177
     },
     {
       "id": "prod-24",
@@ -670,7 +716,9 @@
       "image_count": 5,
       "variant_count": 4,
       "score": 84.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 84.9,
+      "independent_score": 90.97977460197743
     },
     {
       "id": "prod-25",
@@ -698,7 +746,9 @@
       "image_count": 10,
       "variant_count": 2,
       "score": 91.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 91.4,
+      "independent_score": 83.4590744903173
     },
     {
       "id": "prod-26",
@@ -726,7 +776,9 @@
       "image_count": 9,
       "variant_count": 2,
       "score": 91.8,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 91.8,
+      "independent_score": 88.13368617488635
     },
     {
       "id": "prod-27",
@@ -754,7 +806,9 @@
       "image_count": 2,
       "variant_count": 4,
       "score": 78.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 78.5,
+      "independent_score": 77.83536585620688
     },
     {
       "id": "prod-28",
@@ -782,7 +836,9 @@
       "image_count": 10,
       "variant_count": 2,
       "score": 40.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 40.7,
+      "independent_score": 42.00585125513011
     },
     {
       "id": "prod-29",
@@ -810,7 +866,9 @@
       "image_count": 4,
       "variant_count": 1,
       "score": 11.3,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 11.3,
+      "independent_score": 11.66677930011309
     },
     {
       "id": "prod-30",
@@ -838,7 +896,9 @@
       "image_count": 6,
       "variant_count": 3,
       "score": 34.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 34.9,
+      "independent_score": 38.382143213791025
     },
     {
       "id": "prod-31",
@@ -866,7 +926,9 @@
       "image_count": 8,
       "variant_count": 4,
       "score": 49.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 49.7,
+      "independent_score": 53.12887285864812
     },
     {
       "id": "prod-32",
@@ -894,7 +956,9 @@
       "image_count": 1,
       "variant_count": 5,
       "score": 70.8,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 70.8,
+      "independent_score": 79.02177155223133
     },
     {
       "id": "prod-33",
@@ -922,7 +986,9 @@
       "image_count": 4,
       "variant_count": 3,
       "score": 0.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 0.9,
+      "independent_score": 1.1924555668440155
     },
     {
       "id": "prod-34",
@@ -950,7 +1016,9 @@
       "image_count": 9,
       "variant_count": 3,
       "score": 37.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 37.7,
+      "independent_score": 29.45506946588936
     },
     {
       "id": "prod-35",
@@ -978,7 +1046,9 @@
       "image_count": 2,
       "variant_count": 1,
       "score": 51.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 51.4,
+      "independent_score": 58.0683799082209
     },
     {
       "id": "prod-36",
@@ -1006,7 +1076,9 @@
       "image_count": 4,
       "variant_count": 5,
       "score": 40.1,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 40.1,
+      "independent_score": 30.278048027846154
     },
     {
       "id": "prod-37",
@@ -1034,7 +1106,9 @@
       "image_count": 1,
       "variant_count": 1,
       "score": 68.1,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 68.1,
+      "independent_score": 65.2507800799136
     },
     {
       "id": "prod-38",
@@ -1062,7 +1136,9 @@
       "image_count": 5,
       "variant_count": 2,
       "score": 28.5,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 28.5,
+      "independent_score": 37.77212640112134
     },
     {
       "id": "prod-39",
@@ -1090,7 +1166,9 @@
       "image_count": 6,
       "variant_count": 4,
       "score": 4.3,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 4.3,
+      "independent_score": 0
     },
     {
       "id": "prod-40",
@@ -1118,7 +1196,9 @@
       "image_count": 6,
       "variant_count": 5,
       "score": 9.4,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 9.4,
+      "independent_score": 3.708759905564741
     },
     {
       "id": "prod-41",
@@ -1146,7 +1226,9 @@
       "image_count": 1,
       "variant_count": 5,
       "score": 78.2,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 78.2,
+      "independent_score": 69.34999320424853
     },
     {
       "id": "prod-42",
@@ -1174,7 +1256,9 @@
       "image_count": 1,
       "variant_count": 1,
       "score": 15.2,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 15.2,
+      "independent_score": 8.726206209646298
     },
     {
       "id": "prod-43",
@@ -1202,7 +1286,9 @@
       "image_count": 8,
       "variant_count": 3,
       "score": 63.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 63.9,
+      "independent_score": 67.73819716734947
     },
     {
       "id": "prod-44",
@@ -1230,7 +1316,9 @@
       "image_count": 9,
       "variant_count": 3,
       "score": 94.8,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 94.8,
+      "independent_score": 100
     },
     {
       "id": "prod-45",
@@ -1258,7 +1346,9 @@
       "image_count": 7,
       "variant_count": 2,
       "score": 66.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 66.7,
+      "independent_score": 64.56522878446857
     },
     {
       "id": "prod-46",
@@ -1286,7 +1376,9 @@
       "image_count": 5,
       "variant_count": 2,
       "score": 97.6,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 97.6,
+      "independent_score": 100
     },
     {
       "id": "prod-47",
@@ -1314,7 +1406,9 @@
       "image_count": 5,
       "variant_count": 2,
       "score": 98.9,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 98.9,
+      "independent_score": 100
     },
     {
       "id": "prod-48",
@@ -1342,7 +1436,9 @@
       "image_count": 10,
       "variant_count": 5,
       "score": 33,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 33,
+      "independent_score": 25.254014757143537
     },
     {
       "id": "prod-49",
@@ -1370,7 +1466,9 @@
       "image_count": 3,
       "variant_count": 3,
       "score": 71.7,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 71.7,
+      "independent_score": 79.76751258300786
     },
     {
       "id": "prod-50",
@@ -1398,7 +1496,9 @@
       "image_count": 10,
       "variant_count": 2,
       "score": 65.1,
-      "synced_at": "2025-08-20 10:30"
+      "synced_at": "2025-08-20 10:30",
+      "platform_score": 65.1,
+      "independent_score": 59.858796165250325
     }
   ],
   "total": 50

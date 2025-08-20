@@ -19,8 +19,9 @@ export default async function ProductDetail({ params }: { params: { id: string }
         <img src={p.image} className="w-20 h-20 rounded object-cover" />
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{p.title}</h1>
-          <div className="mt-2">
-            <ScoreBadge value={p.score} />
+          <div className="mt-2 flex gap-2">
+            <ScoreBadge value={p.platform_score} />
+            <ScoreBadge value={p.independent_score} />
           </div>
           <a
             href={p.url}

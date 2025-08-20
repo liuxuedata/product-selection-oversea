@@ -14,14 +14,15 @@ type Product = {
   asin_sales: number;
   review_count: number;
   review_rating: number;
-  score: number;
+  platform_score: number;
+  independent_score: number;
 };
 
 export default function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<{ key: "score" | "price"; order: "asc" | "desc" }>({
-    key: "score",
+  const [sort, setSort] = useState<{ key: "platform_score" | "price"; order: "asc" | "desc" }>({
+    key: "platform_score",
     order: "desc",
   });
   const router = useRouter();
@@ -41,7 +42,7 @@ export default function ProductsPage() {
   const sorted = [...filtered].sort((a, b) =>
     sort.order === "asc" ? a[sort.key] - b[sort.key] : b[sort.key] - a[sort.key]
   );
-  const toggleSort = (key: "score" | "price") =>
+  const toggleSort = (key: "platform_score" | "price") =>
     setSort((s) => ({ key, order: s.key === key && s.order === "asc" ? "desc" : "asc" }));
 
   return (
@@ -59,10 +60,13 @@ export default function ProductsPage() {
             <tr>
               <th className="p-3 text-left">产品</th>
               <th className="p-3 text-left">ASIN</th>
-              <th className="p-3 text-right cursor-pointer" onClick={() => toggleSort("price")}>价格</th>
+              <th className="p-3 text-right cursor-pointer" onClick={() => toggleSort("price")}>
+                价格
+              </th>
               <th className="p-3 text-right">销量(ASIN)</th>
               <th className="p-3 text-right">评论(数/分)</th>
-              <th className="p-3 text-left cursor-pointer" onClick={() => toggleSort("score")}>评分</th>
+              <th className="p-3 text-left cursor-pointer" onClick={() => toggleSort("platform_score")}>平台分</th>
+              <th className="p-3 text-left">独立站分</th>
             </tr>
           </thead>
           <tbody>
@@ -90,7 +94,10 @@ export default function ProductsPage() {
                   {p.review_count ?? 0} / {p.review_rating ?? "-"}
                 </td>
                 <td className="p-3">
-                  <ScoreBadge value={p.score} />
+                  <ScoreBadge value={p.platform_score} />
+                </td>
+                <td className="p-3">
+                  <ScoreBadge value={p.independent_score} />
                 </td>
               </tr>
             ))}

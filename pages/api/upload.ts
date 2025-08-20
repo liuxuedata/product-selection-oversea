@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
-import type { File as FormidableFile, Files as FormidableFiles } from 'formidable';
+import type { File as FormidableFile, Files as FormidableFiles, Fields } from 'formidable';
 import fs from 'fs';
 import { supabase } from '@/lib/supabase';
 import { parseExcelToRows } from '@/utils/parseExcel';
@@ -17,10 +17,10 @@ function pickString(row: Record<string, any>, keys: string[]) {
 }
 
 // 关键修复：把 files.file 的 File | File[] | undefined 收窄为单个 FormidableFile
-async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile }> {
+async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile; fields: Fields }> {
   const form = formidable({ multiples: false });
   return new Promise((resolve, reject) => {
-    form.parse(req, (err, _fields, files) => {
+    form.parse(req, (err, fields, files) => {
       if (err) return reject(err);
 
       const fset = files as FormidableFiles;
@@ -31,7 +31,7 @@ async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile }>
       else file = maybe;
 
       if (!file) return reject(new Error('No file field "file" found'));
-      return resolve({ file });
+      return resolve({ file, fields });
     });
   });
 }
@@ -41,8 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1) 解析上传
-    const { file } = await parseForm(req);
+    const { file, fields } = await parseForm(req);
     const buf = fs.readFileSync(file.filepath);
+    const rawType = fields.docType as string | string[] | undefined;
+    const docType = Array.isArray(rawType) ? rawType[0] : rawType || 'unknown';
 
     // 2) 解析 Excel/CSV
     const { sheetName, columns, rows } = parseExcelToRows(buf);
@@ -55,6 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sheet_name: sheetName,
         row_count: rows.length,
         column_names: columns,
+        doc_type: docType,
       })
       .select('id')
       .single();
