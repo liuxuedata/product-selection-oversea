@@ -1,81 +1,55 @@
 "use client";
 import { useEffect, useState } from "react";
+import ScoreBadge from "@/components/ScoreBadge";
 import { useRouter } from "next/navigation";
-import ProductsTable from "@/components/ProductsTable";
 
-type Product = any;
+type Product = {
+  id:string; title:string; url:string; image:string; asin:string; parent_asin:string;
+  price:number; asin_sales:number; review_count:number; review_rating:number; score:number;
+};
 
 export default function ProductsPage() {
-  const [data, setData] = useState<Product[]>([]);
+  const [items, setItems] = useState<Product[]>([]);
   const [q, setQ] = useState("");
-  const [scoreMin, setScoreMin] = useState<number | "">("");
-  const [scoreMax, setScoreMax] = useState<number | "">("");
-  const [sort, setSort] = useState<string>("score");
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-
   const router = useRouter();
 
-  useEffect(() => {
-    fetch("/api/mock/products.json").then(r => r.json()).then((res) => setData(res.items));
-  }, []);
-
-  const filtered = data
-    .filter((item) =>
-      [item.title, item.asin, item.url].some((f) => f.toLowerCase().includes(q.toLowerCase()))
-    )
-    .filter((item) => (scoreMin === "" || item.score >= scoreMin) && (scoreMax === "" || item.score <= scoreMax));
-
-  const sorted = [...filtered].sort((a, b) => {
-    const dir = order === "asc" ? 1 : -1;
-    return a[sort] > b[sort] ? dir : -dir;
-  });
-
-  const totalPages = Math.ceil(sorted.length / pageSize);
-  const start = (page - 1) * pageSize;
-  const displayed = sorted.slice(start, start + pageSize);
+  useEffect(() => { fetch("/api/mock/products.json").then(r=>r.json()).then(setItems); }, []);
+  const filtered = items.filter(p => !q || p.title.toLowerCase().includes(q.toLowerCase()) || p.asin?.toLowerCase().includes(q.toLowerCase()));
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex flex-wrap gap-2 items-center bg-white p-4 rounded shadow">
-        <input value={q} onChange={e => {setQ(e.target.value); setPage(1);}} placeholder="搜索" className="border px-2 py-1 rounded" />
-        <div className="flex items-center gap-1">
-          <label>Score≥</label>
-          <input type="number" value={scoreMin} onChange={e=>{setScoreMin(e.target.value?Number(e.target.value):""); setPage(1);}} className="border w-20 px-2 py-1 rounded" />
-        </div>
-        <div className="flex items-center gap-1">
-          <label>Score≤</label>
-          <input type="number" value={scoreMax} onChange={e=>{setScoreMax(e.target.value?Number(e.target.value):""); setPage(1);}} className="border w-20 px-2 py-1 rounded" />
-        </div>
-        <div className="flex items-center gap-1">
-          <label>排序</label>
-          <select value={sort} onChange={e=>setSort(e.target.value)} className="border px-2 py-1 rounded">
-            <option value="score">综合评分</option>
-            <option value="price">价格</option>
-            <option value="asin_sales">销量</option>
-          </select>
-          <select value={order} onChange={e=>setOrder(e.target.value as any)} className="border px-2 py-1 rounded">
-            <option value="desc">降序</option>
-            <option value="asc">升序</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-1 ml-auto">
-          <label>每页</label>
-          <select value={pageSize} onChange={e=>{setPageSize(Number(e.target.value)); setPage(1);}} className="border px-2 py-1 rounded">
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-      </div>
-
-      <ProductsTable data={displayed} onRowClick={(id)=>router.push(`/products/${id}`)} />
-
-      <div className="flex justify-between items-center">
-        <button disabled={page<=1} onClick={()=>setPage(p=>p-1)} className="px-3 py-1 border rounded disabled:opacity-50">上一页</button>
-        <span>{page} / {totalPages || 1}</span>
-        <button disabled={page>=totalPages} onClick={()=>setPage(p=>p+1)} className="px-3 py-1 border rounded disabled:opacity-50">下一页</button>
+      <h1 className="text-2xl font-semibold">产品列表</h1>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="搜索标题/ASIN"
+             className="border rounded px-3 py-2 w-full max-w-md" />
+      <div className="overflow-auto border rounded">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 sticky top-0">
+            <tr>
+              <th className="p-3 text-left">产品</th>
+              <th className="p-3 text-left">ASIN</th>
+              <th className="p-3 text-right">价格</th>
+              <th className="p-3 text-right">销量(ASIN)</th>
+              <th className="p-3 text-right">评论(数/分)</th>
+              <th className="p-3 text-left">评分</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(p => (
+              <tr key={p.id} className="border-t hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(`/products/${p.id}`)}>
+                <td className="p-3 flex items-center gap-3">
+                  <img src={p.image} alt="" className="w-10 h-10 rounded object-cover" />
+                  <a href={p.url} onClick={e=>e.stopPropagation()} className="underline" target="_blank">{p.title}</a>
+                </td>
+                <td className="p-3">{p.asin}</td>
+                <td className="p-3 text-right">{p.price?.toFixed?.(2)}</td>
+                <td className="p-3 text-right">{p.asin_sales ?? "-"}</td>
+                <td className="p-3 text-right">{p.review_count ?? 0} / {p.review_rating ?? "-"}</td>
+                <td className="p-3"><ScoreBadge value={p.score} /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
+"use client";
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);

@@ -1,60 +1,47 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import ScoreBadge from "@/components/ScoreBadge";
 
-export default function ProductDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
-  const [product, setProduct] = useState<any | null>(null);
-  const [related, setRelated] = useState<any[]>([]);
+async function getData(id: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/mock/products.json`, { cache: "no-store" });
+  const items = await res.json();
+  return items.find((x: any) => x.id === id);
+}
 
-  useEffect(() => {
-    fetch("/api/mock/products.json").then(r=>r.json()).then(({items}) => {
-      const p = items.find((i: any) => i.id === id);
-      setProduct(p);
-      setRelated(items.slice(0, 4));
-    });
-  }, [id]);
-
-  if (!product) return <div className="p-6">Loading...</div>;
+export default async function ProductDetail({ params }: { params: { id: string } }) {
+  const p = await getData(params.id);
+  if (!p) return <div className="p-6">未找到该产品</div>;
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="bg-white p-4 rounded shadow flex gap-4">
-        <img src={product.image} alt="" className="w-32 h-32 rounded" />
-        <div className="space-y-2">
-          <h1 className="text-xl font-semibold">{product.title}</h1>
-          <a href={product.url} className="text-blue-600 underline" target="_blank" rel="noreferrer">{product.url}</a>
-          <div><ScoreBadge value={product.score} /></div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>价格: {product.price}</div>
-            <div>销量: {product.asin_sales}</div>
-            <div>评论: {product.review_count}</div>
-            <div>卖家数: {product.seller_count}</div>
-            <div>年龄(月): {product.age_months}</div>
-            <div>尺寸: {product.size}</div>
-          </div>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center gap-4">
+        <img src={p.image} className="w-20 h-20 rounded object-cover" />
+        <div className="flex-1">
+          <h1 className="text-2xl font-semibold">{p.title}</h1>
+          <div className="mt-2"><ScoreBadge value={p.score} /></div>
+          <a href={p.url} target="_blank" className="text-sm underline text-gray-600">查看原始链接</a>
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-medium mb-2">评分分解</h2>
-        <div className="h-40 bg-gray-100 flex items-center justify-center text-gray-500">TODO: Score Breakdown Chart</div>
-      </div>
-
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-medium mb-2">趋势</h2>
-        <div className="h-40 bg-gray-100 flex items-center justify-center text-gray-500">TODO: Trend Chart</div>
-      </div>
-
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="font-medium mb-2">相关产品</h2>
-        <ul className="list-disc pl-6 text-sm">
-          {related.map(r => (
-            <li key={r.id}>{r.title}</li>
-          ))}
-        </ul>
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="border rounded p-4">
+          <h2 className="font-semibold mb-3">基础信息</h2>
+          <ul className="text-sm space-y-2">
+            <li>ASIN：{p.asin}</li>
+            <li>父级：{p.parent_asin}</li>
+            <li>价格：${p.price}</li>
+            <li>销量(ASIN)：{p.asin_sales}</li>
+            <li>评论：{p.review_count} / {p.review_rating}</li>
+          </ul>
+        </div>
+        <div className="border rounded p-4">
+          <h2 className="font-semibold mb-3">更多指标</h2>
+          <ul className="text-sm space-y-2">
+            <li>卖家数：{p.seller_count}</li>
+            <li>年龄（月）：{p.age_months}</li>
+            <li>图片数：{p.image_count}</li>
+            <li>变体数：{p.variant_count}</li>
+            <li>同步时间：{p.synced_at}</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
