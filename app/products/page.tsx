@@ -6,7 +6,7 @@ import { SCORE_TIERS } from "@/utils/score";
 type Product = {
   id: string;
   url: string | null;
-  image: string | null;
+  image_url: string | null;
   asin: string | null;
   title: string | null;
   brand: string | null;
@@ -18,7 +18,7 @@ type Product = {
   third_party_seller: string | null;
   seller_country: string | null;
   active_seller_count: number | null;
-  size: string | null;
+  size_tier: string | null;
   length: number | null;
   width: number | null;
   height: number | null;
@@ -27,13 +27,6 @@ type Product = {
   platform_score: number | null;
   independent_score: number | null;
 };
-
-function pick(obj: any, keys: string[]): any {
-  for (const k of keys) {
-    if (obj && obj[k] !== undefined && obj[k] !== null) return obj[k];
-  }
-  return null;
-}
 
 export default function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
@@ -48,33 +41,30 @@ export default function ProductsPage() {
       );
       const rows = res.rows || [];
       console.log('fetched rows', rows.length);
-      const mapped: Product[] = rows.map((r: any) => {
-        const d = r.data || {};
-        return {
-          id: r.row_id,
-          url: r.url ?? null,
-          image: pick(d, ["图片 URL", "Image URL", "image"]),
-          asin: r.asin ?? null,
-          title: r.title ?? null,
-          brand: pick(d, ["品牌", "Brand"]),
-          shipping: pick(d, ["配送方式", "Shipping"]),
-          category: pick(d, ["类目", "Category"]),
-          price: pick(d, ["价格", "Price"]),
-          review_count: pick(d, ["评论数量", "Review Count"]),
-          review_rating: pick(d, ["评论评分", "Review Rating"]),
-          third_party_seller: pick(d, ["第三方卖家", "Third Party Seller"]),
-          seller_country: pick(d, ["卖家国家/地区", "Seller Country"]),
-          active_seller_count: pick(d, ["活跃卖家数量", "Active Sellers"]),
-          size: pick(d, ["尺寸分级", "Size"]),
-          length: pick(d, ["长度", "Length"]),
-          width: pick(d, ["宽度", "Width"]),
-          height: pick(d, ["高度", "Height"]),
-          weight: pick(d, ["重量", "Weight"]),
-          age_months: pick(d, ["年龄（月）", "Age (Months)"]),
-          platform_score: r.platform_score ?? null,
-          independent_score: r.independent_score ?? null,
-        };
-      });
+      const mapped: Product[] = rows.map((r: any) => ({
+        id: r.row_id,
+        url: r.url ?? null,
+        image_url: r.image_url ?? null,
+        asin: r.asin ?? null,
+        title: r.title ?? null,
+        brand: r.brand ?? null,
+        shipping: r.shipping ?? null,
+        category: r.category ?? null,
+        price: r.price ?? null,
+        review_count: r.review_count ?? null,
+        review_rating: r.review_rating ?? null,
+        third_party_seller: r.third_party_seller ?? null,
+        seller_country: r.seller_country ?? null,
+        active_seller_count: r.active_seller_count ?? null,
+        size_tier: r.size_tier ?? null,
+        length: r.length ?? null,
+        width: r.width ?? null,
+        height: r.height ?? null,
+        weight: r.weight ?? null,
+        age_months: r.age_months ?? null,
+        platform_score: r.platform_score ?? null,
+        independent_score: r.independent_score ?? null,
+      }));
       const filtered = mapped.filter(
         (p) =>
           Math.max(p.platform_score ?? 0, p.independent_score ?? 0) <
@@ -126,8 +116,8 @@ export default function ProductsPage() {
                 )}
               </td>
               <td className="p-2">
-                {p.image && (
-                  <a href={p.image} target="_blank" className="underline">
+                {p.image_url && (
+                  <a href={p.image_url} target="_blank" className="underline">
                     图片
                   </a>
                 )}
@@ -143,7 +133,7 @@ export default function ProductsPage() {
               <td className="p-2">{p.third_party_seller}</td>
               <td className="p-2">{p.seller_country}</td>
               <td className="p-2 text-right">{p.active_seller_count ?? "-"}</td>
-              <td className="p-2">{p.size}</td>
+              <td className="p-2">{p.size_tier}</td>
               <td className="p-2 text-right">{p.length ?? "-"}</td>
               <td className="p-2 text-right">{p.width ?? "-"}</td>
               <td className="p-2 text-right">{p.height ?? "-"}</td>
