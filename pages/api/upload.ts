@@ -16,6 +16,15 @@ function pickString(row: Record<string, any>, keys: string[]) {
   return null;
 }
 
+// 将任意列名转换为数据库列名（下划线小写）
+function normalizeColumnName(name: string) {
+  return name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
 // 关键修复：把 files.file 的 File | File[] | undefined 收窄为单个 FormidableFile
 async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile; fields: Fields }> {
   const form = formidable({ multiples: false });
@@ -77,14 +86,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (!asin && !url) { invalid++; continue; }
 
-      const payload = {
+      const payload: Record<string, any> = {
         file_id: fileRow.id,
         row_index: i + 2, // 约定：含表头时的数据行 +2 便于回查
-        asin,
-        url,
-        title,
-        data: r
+        data: r,
       };
+
+      // 将 Excel 原始列映射到数据库列
+      for (const [key, value] of Object.entries(r)) {
+        const col = normalizeColumnName(key);
+        if (col) payload[col] = value;
+      }
+
+      // 确保关键字段使用规范化的值
+      payload.asin = asin;
+      payload.url = url;
+      payload.title = title;
 
       const { error: insErr } = await supabase.from('blackbox_rows').insert(payload);
       if (insErr) {
