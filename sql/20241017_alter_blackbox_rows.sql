@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS v_blackbox_rows_with_scores;
+
 ALTER TABLE blackbox_rows
   ADD COLUMN image_url text,
   ADD COLUMN brand text,
@@ -37,7 +39,7 @@ ALTER TABLE blackbox_rows
   ADD COLUMN variant_count int,
   ADD COLUMN sales_review_ratio numeric;
 
-CREATE OR REPLACE VIEW v_blackbox_rows_with_scores AS
+CREATE VIEW v_blackbox_rows_with_scores AS
 SELECT
   r.id AS row_id,
   r.file_id,
