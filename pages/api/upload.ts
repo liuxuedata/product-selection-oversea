@@ -46,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 2) 解析 Excel/CSV
     const { sheetName, columns, rows } = parseExcelToRows(buf);
+    console.log('parsed upload', file.originalFilename, 'rows', rows.length);
 
     // 3) 记录文件元数据
     const { data: fileRow, error: fileErr } = await supabase
@@ -62,6 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (fileErr) {
       return res.status(500).json({ error: `Insert file meta failed: ${fileErr.message}` });
     }
+    console.log('file meta inserted', fileRow.id);
 
     // 4) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
     let inserted = 0, skipped = 0, invalid = 0;
@@ -100,6 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         invalid_count: invalid,
       })
       .eq('id', fileRow.id);
+    console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
 
     // 6) 返回
     return res.status(200).json({

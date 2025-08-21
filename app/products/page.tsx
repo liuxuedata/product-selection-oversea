@@ -47,6 +47,7 @@ export default function ProductsPage() {
         r.json()
       );
       const rows = res.rows || [];
+      console.log('fetched rows', rows.length);
       const mapped: Product[] = rows.map((r: any) => {
         const d = r.data || {};
         return {
@@ -79,6 +80,7 @@ export default function ProductsPage() {
           Math.max(p.platform_score ?? 0, p.independent_score ?? 0) <
           SCORE_TIERS.MIN
       );
+      console.log('products after filter', filtered.length);
       setItems(filtered);
     }
     load();
