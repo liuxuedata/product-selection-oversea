@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) {
   const [docType, setDocType] = useState('blackbox');
   const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState('');
   const [message, setMessage] = useState('');
   const router = useRouter();
 
@@ -16,9 +17,16 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload');
 
+    setStatus('上传中...');
+    setMessage('');
+
     xhr.upload.onprogress = e => {
       if (e.lengthComputable) {
-        setProgress(Math.round((e.loaded / e.total) * 100));
+        const p = Math.round((e.loaded / e.total) * 100);
+        setProgress(p);
+        if (p === 100) {
+          setStatus('加载中...');
+        }
       }
     };
 
@@ -26,13 +34,16 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          setMessage(`上传完成，成功 ${data.stats.inserted} 条`);
+          setStatus('完成');
+          setMessage(`成功 ${data.stats.inserted} 条`);
           onUploaded?.();
           router.push(`/recommendations/platform`);
         } else {
+          setStatus('上传失败');
           setMessage(data.error || 'Upload failed');
         }
       } catch (err) {
+        setStatus('上传失败');
         setMessage('Upload failed');
       } finally {
         setProgress(0);
@@ -40,6 +51,7 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
     };
 
     xhr.onerror = () => {
+      setStatus('上传失败');
       setMessage('Upload failed');
       setProgress(0);
     };
@@ -74,16 +86,24 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
         </select>
       </div>
 
-      {progress > 0 && (
-        <div className="w-full bg-gray-200 h-2">
-          <div
-            className="bg-blue-600 h-2"
-            style={{ width: `${progress}%` }}
-          />
+      {progress > 0 ? (
+        <div>
+          <div className="w-full bg-gray-200 h-2">
+            <div
+              className="bg-blue-600 h-2"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {status && <p className="text-sm text-gray-600 mt-1">{status}</p>}
         </div>
+      ) : (
+        status && (
+          <p className="text-sm text-gray-600">
+            {status}
+            {message && `，${message}`}
+          </p>
+        )
       )}
-
-      {message && <p className="text-sm text-gray-600">{message}</p>}
     </div>
   );
 }
