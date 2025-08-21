@@ -2,7 +2,14 @@
 import { useEffect, useState } from "react";
 import UploadForm from "@/components/UploadForm";
 
-type FileRow = { id: string; filename: string; doc_type: string; uploaded_at: string };
+type FileRow = {
+  id: string;
+  filename: string;
+  doc_type: string;
+  uploaded_at: string;
+  row_count?: number;
+  inserted_count?: number;
+};
 
 export default function HomePage() {
   const [records, setRecords] = useState<FileRow[]>([]);
@@ -29,6 +36,7 @@ export default function HomePage() {
               <th className="p-2 text-left">文件名</th>
               <th className="p-2 text-left">类型</th>
               <th className="p-2 text-left">上传时间</th>
+              <th className="p-2 text-right">录入条数</th>
             </tr>
           </thead>
           <tbody>
@@ -37,11 +45,12 @@ export default function HomePage() {
                 <td className="p-2">{r.filename}</td>
                 <td className="p-2">{r.doc_type}</td>
                 <td className="p-2">{new Date(r.uploaded_at).toLocaleString()}</td>
+                <td className="p-2 text-right">{r.inserted_count ?? r.row_count ?? '-'}</td>
               </tr>
             ))}
             {!records.length && (
               <tr>
-                <td className="p-2 text-center" colSpan={3}>
+                <td className="p-2 text-center" colSpan={4}>
                   暂无记录
                 </td>
               </tr>

@@ -91,7 +91,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       inserted++;
     }
 
-    // 5) 返回
+    // 5) 将统计写回文件记录（忽略错误）
+    await supabase
+      .from('blackbox_files')
+      .update({
+        inserted_count: inserted,
+        skipped_count: skipped,
+        invalid_count: invalid,
+      })
+      .eq('id', fileRow.id);
+
+    // 6) 返回
     return res.status(200).json({
       fileId: fileRow.id,
       stats: { inserted, skipped, invalid, total: rows.length },
