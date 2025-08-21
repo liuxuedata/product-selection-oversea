@@ -16,6 +16,13 @@ function pickString(row: Record<string, any>, keys: string[]) {
   return null;
 }
 
+function pickNumber(row: Record<string, any>, keys: string[]) {
+  const s = pickString(row, keys);
+  if (s === null) return null;
+  const n = parseFloat(String(s).replace(/[^0-9\.\-]/g, ''));
+  return Number.isNaN(n) ? null : n;
+}
+
 // 关键修复：把 files.file 的 File | File[] | undefined 收窄为单个 FormidableFile
 async function parseForm(req: NextApiRequest): Promise<{ file: FormidableFile; fields: Fields }> {
   const form = formidable({ multiples: false });
@@ -82,6 +89,43 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         asin,
         url,
         title,
+        image_url: pickString(r, ['图片 URL','Image URL','image']),
+        brand: pickString(r, ['品牌','Brand']),
+        shipping: pickString(r, ['配送方式','Shipping']),
+        category: pickString(r, ['类目','Category']),
+        bsr: pickNumber(r, ['BSR']),
+        upc: pickString(r, ['UPC']),
+        gtin: pickString(r, ['GTIN']),
+        ean: pickString(r, ['EAN']),
+        isbn: pickString(r, ['ISBN']),
+        sub_category: pickString(r, ['子类目','Subcategory']),
+        sub_category_bsr: pickNumber(r, ['子类目BSR','Subcategory BSR']),
+        price: pickNumber(r, ['价格','Price']),
+        price_trend_90d: pickNumber(r, ['价格趋势（90 天） (%)','Price Trend (90d) (%)']),
+        parent_sales: pickNumber(r, ['父级销量','Parent Sales']),
+        asin_sales: pickNumber(r, ['ASIN 销量','ASIN Sales']),
+        sales_trend_90d: pickNumber(r, ['销量趋势（90 天） (%)','Sales Trend (90d) (%)']),
+        parent_revenue: pickNumber(r, ['父级收入','Parent Revenue']),
+        asin_revenue: pickNumber(r, ['ASIN 收入','ASIN Revenue']),
+        review_count: pickNumber(r, ['评论数量','Review Count']),
+        review_rating: pickNumber(r, ['评论评分','Review Rating']),
+        third_party_seller: pickString(r, ['第三方卖家','Third Party Seller']),
+        seller_country: pickString(r, ['卖家国家/地区','Seller Country','Seller Country/Region']),
+        active_seller_count: pickNumber(r, ['活跃卖家数量','Active Sellers']),
+        last_year_sales: pickNumber(r, ['去年销量','Last Year Sales']),
+        yoy_sales_percent: pickNumber(r, ['销量年同比 (%)','YoY Sales (%)']),
+        size_tier: pickString(r, ['尺寸分级','Size Tier','Size']),
+        length: pickNumber(r, ['长度','Length']),
+        width: pickNumber(r, ['宽度','Width']),
+        height: pickNumber(r, ['高度','Height']),
+        weight: pickNumber(r, ['重量','Weight']),
+        storage_fee_jan_sep: pickNumber(r, ['仓储费用 (1 月 - 9 月)','Storage Fee (Jan-Sep)']),
+        storage_fee_oct_dec: pickNumber(r, ['仓储费用 (10 月 - 12 月)','Storage Fee (Oct-Dec)']),
+        best_sales_period: pickString(r, ['最佳销售期','Best Sales Period']),
+        age_months: pickNumber(r, ['年龄（月）','Age (Months)']),
+        image_count: pickNumber(r, ['图片的数量','Image Count']),
+        variant_count: pickNumber(r, ['变体数量','Variant Count']),
+        sales_review_ratio: pickNumber(r, ['销量评论比','Sales/Review Ratio']),
         data: r
       };
 
