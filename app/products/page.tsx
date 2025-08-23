@@ -36,6 +36,7 @@ export default function ProductsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+  const [preview, setPreview] = useState<string | null>(null);
   const [draft, setDraft] = useState({
     platformMin: '',
     platformMax: '',
@@ -224,10 +225,11 @@ export default function ProductsPage() {
           搜索
         </button>
       </div>
-      <div className="overflow-x-auto rounded border border-[var(--border)]">
-        <table className="min-w-full text-sm">
-          <thead className="bg-[var(--muted)]">
-            <tr>
+      <div className="flex gap-4">
+        <div className="flex-1 overflow-x-auto rounded border border-[var(--border)]">
+          <table className="min-w-full text-sm">
+            <thead className="bg-[var(--muted)]">
+              <tr>
               {renderHeader('图片', 'image_url')}
               {renderHeader('标题', 'title')}
               {renderHeader('ASIN', 'asin')}
@@ -262,7 +264,9 @@ export default function ProductsPage() {
                     <img
                       src={p.image_url}
                       alt={p.title ?? ''}
-                      className="w-32 h-32 object-contain"
+                      style={{ width: 50, height: 50 }}
+                      className="object-contain cursor-pointer"
+                      onClick={() => setPreview(p.image_url!)}
                     />
                   )}
                 </td>
@@ -324,7 +328,19 @@ export default function ProductsPage() {
           </tbody>
         </table>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="w-72 h-72 border border-[var(--border)] flex items-center justify-center">
+        {preview ? (
+          <img
+            src={preview}
+            alt="预览"
+            className="max-w-full max-h-full object-contain"
+          />
+        ) : (
+          <span className="text-xs text-gray-500">点击图片预览</span>
+        )}
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
         <button
           className="px-2 py-1 border"
           onClick={() => setPage((p) => Math.max(1, p - 1))}
