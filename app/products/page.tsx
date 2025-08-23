@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
-import { SCORE_TIERS } from "@/utils/score";
 
 type Product = {
   id: string;
@@ -26,23 +25,51 @@ type Product = {
   age_months: number | null;
   platform_score: number | null;
   independent_score: number | null;
+  created_at: string | null;
 };
 
 export default function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
   const [sortKey, setSortKey] = useState<keyof Product | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [draft, setDraft] = useState({
+    platformMin: '',
+    platformMax: '',
+    independentMin: '',
+    independentMax: '',
+    keyword: '',
+    category: '',
+  });
+  const [filters, setFilters] = useState(draft);
+
+  useEffect(() => {
+    async function loadCategories() {
+      const res = await fetch('/api/categories').then((r) => r.json());
+      setCategories(res.categories || []);
+    }
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     async function load() {
-      const files = await fetch("/api/files").then((r) => r.json());
+      const files = await fetch('/api/files').then((r) => r.json());
       if (!Array.isArray(files) || !files.length) return;
       const latest = files[0];
-      const res = await fetch(`/api/files/${latest.id}/rows?limit=1000`).then((r) =>
-        r.json()
-      );
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v) params.set(k, v);
+      });
+      const res = await fetch(
+        `/api/files/${latest.id}/rows?${params.toString()}`
+      ).then((r) => r.json());
       const rows = res.rows || [];
-      console.log('fetched rows', rows.length);
       const mapped: Product[] = rows.map((r: any) => ({
         id: r.row_id,
         url: r.url ?? null,
@@ -66,17 +93,13 @@ export default function ProductsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
+        created_at: r.created_at ?? null,
       }));
-      const filtered = mapped.filter(
-        (p) =>
-          Math.max(p.platform_score ?? 0, p.independent_score ?? 0) <
-          SCORE_TIERS.MIN
-      );
-      console.log('products after filter', filtered.length);
-      setItems(filtered);
+      setItems(mapped);
+      setTotal(res.count || 0);
     }
     load();
-  }, []);
+  }, [page, limit, filters]);
 
   function handleSort(key: keyof Product) {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -115,12 +138,92 @@ export default function ProductsPage() {
       onClick={() => handleSort(key)}
     >
       {label}
+      {sortKey === key && (sortDir === 'asc' ? ' ↑' : ' ↓')}
     </th>
   );
 
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">产品列表</h1>
+      <div className="flex flex-wrap items-end gap-2">
+        <div>
+          <label className="block text-xs">平台评分</label>
+          <div className="flex gap-1">
+            <input
+              type="number"
+              placeholder="最低"
+              className="w-20 border px-1"
+              value={draft.platformMin}
+              onChange={(e) => setDraft({ ...draft, platformMin: e.target.value })}
+            />
+            <span>-</span>
+            <input
+              type="number"
+              placeholder="最高"
+              className="w-20 border px-1"
+              value={draft.platformMax}
+              onChange={(e) => setDraft({ ...draft, platformMax: e.target.value })}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs">独立站评分</label>
+          <div className="flex gap-1">
+            <input
+              type="number"
+              placeholder="最低"
+              className="w-20 border px-1"
+              value={draft.independentMin}
+              onChange={(e) =>
+                setDraft({ ...draft, independentMin: e.target.value })
+              }
+            />
+            <span>-</span>
+            <input
+              type="number"
+              placeholder="最高"
+              className="w-20 border px-1"
+              value={draft.independentMax}
+              onChange={(e) =>
+                setDraft({ ...draft, independentMax: e.target.value })
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs">产品名</label>
+          <input
+            type="text"
+            className="border px-1"
+            value={draft.keyword}
+            onChange={(e) => setDraft({ ...draft, keyword: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="block text-xs">类目</label>
+          <select
+            className="border px-1"
+            value={draft.category}
+            onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+          >
+            <option value="">全部</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          className="px-3 py-1 border bg-[var(--muted)]"
+          onClick={() => {
+            setFilters(draft);
+            setPage(1);
+          }}
+        >
+          搜索
+        </button>
+      </div>
       <table className="min-w-full text-sm border border-[var(--border)]">
         <thead className="bg-[var(--muted)]">
           <tr>
@@ -144,6 +247,7 @@ export default function ProductsPage() {
             {renderHeader('年龄（月）', 'age_months', 'text-right')}
             {renderHeader('平台评分', 'platform_score')}
             {renderHeader('独立站评分', 'independent_score')}
+            {renderHeader('录入时间', 'created_at')}
           </tr>
         </thead>
         <tbody>
@@ -154,7 +258,7 @@ export default function ProductsPage() {
                   <img
                     src={p.image_url}
                     alt={p.title ?? ''}
-                    className="w-16 h-auto"
+                    className="w-24 h-auto"
                   />
                 )}
               </td>
@@ -189,17 +293,59 @@ export default function ProductsPage() {
               <td className="p-2">
                 <ScoreBadge value={p.independent_score ?? 0} />
               </td>
+              <td className="p-2 text-right">
+                {p.created_at
+                  ? new Date(p.created_at).toLocaleDateString()
+                  : '-'}
+              </td>
             </tr>
           ))}
           {!display.length && (
             <tr>
-              <td className="p-2 text-center" colSpan={20}>
+              <td className="p-2 text-center" colSpan={21}>
                 暂无数据
               </td>
             </tr>
           )}
         </tbody>
       </table>
+      <div className="flex items-center gap-2">
+        <button
+          className="px-2 py-1 border"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          上一页
+        </button>
+        <span>
+          {page}/{Math.max(1, Math.ceil(total / limit))}
+        </span>
+        <button
+          className="px-2 py-1 border"
+          onClick={() =>
+            setPage((p) =>
+              p < Math.ceil(total / limit) ? p + 1 : p
+            )
+          }
+          disabled={page >= Math.ceil(total / limit)}
+        >
+          下一页
+        </button>
+        <select
+          className="border px-1"
+          value={limit}
+          onChange={(e) => {
+            setLimit(Number(e.target.value));
+            setPage(1);
+          }}
+        >
+          {[10, 20, 50, 100].map((n) => (
+            <option key={n} value={n}>
+              {n}/页
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

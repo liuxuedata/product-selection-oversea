@@ -8,10 +8,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const limit = parseInt((req.query.limit as string) ?? '50', 10);
   const from = (page - 1) * limit;
   const to = from + limit - 1;
-  const { data, error, count } = await supabase
+  const {
+    platformMin,
+    platformMax,
+    independentMin,
+    independentMax,
+    keyword,
+    category,
+  } = req.query;
+
+  let query = supabase
     .from('v_blackbox_rows_with_scores')
     .select('*', { count: 'exact' })
-    .eq('file_id', id)
+    .eq('file_id', id);
+
+  if (platformMin) query = query.gte('platform_score', Number(platformMin));
+  if (platformMax) query = query.lte('platform_score', Number(platformMax));
+  if (independentMin)
+    query = query.gte('independent_score', Number(independentMin));
+  if (independentMax)
+    query = query.lte('independent_score', Number(independentMax));
+  if (keyword) query = query.ilike('title', `%${keyword}%`);
+  if (category) query = query.eq('category', category);
+
+  const { data, error, count } = await query
     .order('row_index', { ascending: true })
     .range(from, to);
   if (error) return res.status(500).json({ error: error.message });
