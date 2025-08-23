@@ -30,6 +30,8 @@ type Product = {
 
 export default function ProductsPage() {
   const [items, setItems] = useState<Product[]>([]);
+  const [sortKey, setSortKey] = useState<keyof Product | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     async function load() {
@@ -76,69 +78,111 @@ export default function ProductsPage() {
     load();
   }, []);
 
+  function handleSort(key: keyof Product) {
+    if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  }
+
+  const display = [...items];
+  if (sortKey) {
+    display.sort((a, b) => {
+      const va = a[sortKey];
+      const vb = b[sortKey];
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return sortDir === 'asc' ? va - vb : vb - va;
+      }
+      const sa = String(va);
+      const sb = String(vb);
+      if (sa < sb) return sortDir === 'asc' ? -1 : 1;
+      if (sa > sb) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  const renderHeader = (
+    label: string,
+    key: keyof Product,
+    align: string = 'text-left'
+  ) => (
+    <th
+      key={String(key)}
+      className={`p-2 ${align} cursor-pointer select-none`}
+      onClick={() => handleSort(key)}
+    >
+      {label}
+    </th>
+  );
+
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">产品列表</h1>
       <table className="min-w-full text-sm border border-[var(--border)]">
         <thead className="bg-[var(--muted)]">
           <tr>
-            <th className="p-2 text-left">URL</th>
-            <th className="p-2 text-left">图片 URL</th>
-            <th className="p-2 text-left">ASIN</th>
-            <th className="p-2 text-left">标题</th>
-            <th className="p-2 text-left">品牌</th>
-            <th className="p-2 text-left">配送方式</th>
-            <th className="p-2 text-left">类目</th>
-            <th className="p-2 text-right">价格</th>
-            <th className="p-2 text-right">评论数量</th>
-            <th className="p-2 text-right">评论评分</th>
-            <th className="p-2 text-left">第三方卖家</th>
-            <th className="p-2 text-left">卖家国家/地区</th>
-            <th className="p-2 text-right">活跃卖家数量</th>
-            <th className="p-2 text-left">尺寸分级</th>
-            <th className="p-2 text-right">长度</th>
-            <th className="p-2 text-right">宽度</th>
-            <th className="p-2 text-right">高度</th>
-            <th className="p-2 text-right">重量</th>
-            <th className="p-2 text-right">年龄（月）</th>
-            <th className="p-2 text-left">平台评分</th>
-            <th className="p-2 text-left">独立站评分</th>
+            {renderHeader('图片', 'image_url')}
+            {renderHeader('标题', 'title')}
+            {renderHeader('ASIN', 'asin')}
+            {renderHeader('品牌', 'brand')}
+            {renderHeader('配送方式', 'shipping')}
+            {renderHeader('类目', 'category')}
+            {renderHeader('价格', 'price', 'text-right')}
+            {renderHeader('评论数量', 'review_count', 'text-right')}
+            {renderHeader('评论评分', 'review_rating', 'text-right')}
+            {renderHeader('第三方卖家', 'third_party_seller')}
+            {renderHeader('卖家国家/地区', 'seller_country')}
+            {renderHeader('活跃卖家数量', 'active_seller_count', 'text-right')}
+            {renderHeader('尺寸分级', 'size_tier')}
+            {renderHeader('长度', 'length', 'text-right')}
+            {renderHeader('宽度', 'width', 'text-right')}
+            {renderHeader('高度', 'height', 'text-right')}
+            {renderHeader('重量', 'weight', 'text-right')}
+            {renderHeader('年龄（月）', 'age_months', 'text-right')}
+            {renderHeader('平台评分', 'platform_score')}
+            {renderHeader('独立站评分', 'independent_score')}
           </tr>
         </thead>
         <tbody>
-          {items.map((p) => (
+          {display.map((p) => (
             <tr key={p.id} className="border-t border-[var(--border)]">
               <td className="p-2">
-                {p.url && (
-                  <a href={p.url} target="_blank" className="underline">
-                    链接
-                  </a>
+                {p.image_url && (
+                  <img
+                    src={p.image_url}
+                    alt={p.title ?? ''}
+                    className="w-16 h-auto"
+                  />
                 )}
               </td>
               <td className="p-2">
-                {p.image_url && (
-                  <a href={p.image_url} target="_blank" className="underline">
-                    图片
+                {p.url ? (
+                  <a href={p.url} target="_blank" className="underline">
+                    {p.title || '查看'}
                   </a>
+                ) : (
+                  p.title
                 )}
               </td>
               <td className="p-2">{p.asin}</td>
-              <td className="p-2">{p.title}</td>
               <td className="p-2">{p.brand}</td>
               <td className="p-2">{p.shipping}</td>
               <td className="p-2">{p.category}</td>
-              <td className="p-2 text-right">{p.price ?? "-"}</td>
-              <td className="p-2 text-right">{p.review_count ?? "-"}</td>
-              <td className="p-2 text-right">{p.review_rating ?? "-"}</td>
+              <td className="p-2 text-right">{p.price ?? '-'}</td>
+              <td className="p-2 text-right">{p.review_count ?? '-'}</td>
+              <td className="p-2 text-right">{p.review_rating ?? '-'}</td>
               <td className="p-2">{p.third_party_seller}</td>
               <td className="p-2">{p.seller_country}</td>
-              <td className="p-2 text-right">{p.active_seller_count ?? "-"}</td>
+              <td className="p-2 text-right">{p.active_seller_count ?? '-'}</td>
               <td className="p-2">{p.size_tier}</td>
-              <td className="p-2 text-right">{p.length ?? "-"}</td>
-              <td className="p-2 text-right">{p.width ?? "-"}</td>
-              <td className="p-2 text-right">{p.height ?? "-"}</td>
-              <td className="p-2 text-right">{p.weight ?? "-"}</td>
-              <td className="p-2 text-right">{p.age_months ?? "-"}</td>
+              <td className="p-2 text-right">{p.length ?? '-'}</td>
+              <td className="p-2 text-right">{p.width ?? '-'}</td>
+              <td className="p-2 text-right">{p.height ?? '-'}</td>
+              <td className="p-2 text-right">{p.weight ?? '-'}</td>
+              <td className="p-2 text-right">{p.age_months ?? '-'}</td>
               <td className="p-2">
                 <ScoreBadge value={p.platform_score ?? 0} />
               </td>
@@ -147,9 +191,9 @@ export default function ProductsPage() {
               </td>
             </tr>
           ))}
-          {!items.length && (
+          {!display.length && (
             <tr>
-              <td className="p-2 text-center" colSpan={21}>
+              <td className="p-2 text-center" colSpan={20}>
                 暂无数据
               </td>
             </tr>

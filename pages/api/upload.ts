@@ -84,13 +84,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (!asin && !url) { invalid++; continue; }
 
+      const rawImage = pickString(r, ['图片 URL', '图片URL', '图片链接', 'Image URL', 'ImageURL', 'Image Link', 'image']);
+      let image_url = rawImage;
+      if (rawImage && /^https?:/i.test(rawImage)) {
+        try {
+          const resp = await fetch(rawImage);
+          if (resp.ok) {
+            const contentType = resp.headers.get('content-type') || 'image/jpeg';
+            const ext = contentType.split('/').pop()?.split(';')[0] || 'jpg';
+            const buffer = Buffer.from(await resp.arrayBuffer());
+            const filePath = `products/${Date.now()}_${i}.${ext}`;
+            const { error: uploadErr } = await supabase.storage
+              .from('product-images')
+              .upload(filePath, buffer, { contentType, upsert: true });
+            if (!uploadErr) {
+              const { data } = supabase.storage
+                .from('product-images')
+                .getPublicUrl(filePath);
+              image_url = data.publicUrl;
+            }
+          }
+        } catch (e) {
+          console.error('image download failed', rawImage, e);
+        }
+      }
+
       const payload = {
         file_id: fileRow.id,
         row_index: i + 2, // 约定：含表头时的数据行 +2 便于回查
         asin,
         url,
         title,
-        image_url: pickString(r, ['图片 URL', '图片URL', '图片链接', 'Image URL', 'ImageURL', 'Image Link', 'image']),
+        image_url,
         brand: pickString(r, ['品牌', 'Brand', '品牌名称', 'Brand Name']),
         shipping: pickString(r, ['配送方式', 'Shipping', 'Shipping Method', '发货方式']),
         category: pickString(r, ['类目', 'Category', '分类', '类别', 'Category Name']),
