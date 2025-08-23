@@ -26,10 +26,19 @@ export function computeScores(row: Record<string, any>) {
   const variantCount = pickNumber(row, ['variant_count', '变体数量']);
 
   // --- dimension scores ---
-  let priceScore = 0;
-  if (price < 10) priceScore = 30 + price * 4;
-  else if (price <= 200) priceScore = 70 + (200 - Math.abs(price - 80)) * 0.3;
-  else priceScore = Math.max(30, 100 - (price - 200) * 0.3);
+  // platform site price preference: 10~200 sweet spot
+  let priceScorePlatform = 0;
+  if (price < 10) priceScorePlatform = 30 + price * 4;
+  else if (price <= 200) priceScorePlatform = 70 + (200 - Math.abs(price - 80)) * 0.3;
+  else priceScorePlatform = Math.max(30, 100 - (price - 200) * 0.3);
+
+  // independent site price scoring: higher price favored up to 400+
+  let priceScoreIndependent = 0;
+  if (price >= 400) priceScoreIndependent = 100;
+  else if (price >= 300) priceScoreIndependent = 80 + (20 * (price - 300)) / 100;
+  else if (price >= 200) priceScoreIndependent = 60 + (20 * (price - 200)) / 100;
+  else if (price >= 100) priceScoreIndependent = 40 + (20 * (price - 100)) / 100;
+  else priceScoreIndependent = (40 * price) / 100;
 
   const priceTrendScore = priceTrend >= 50 ? 100 : priceTrend >= 0 ? 50 + priceTrend : Math.max(0, 50 + priceTrend);
 
@@ -87,7 +96,7 @@ export function computeScores(row: Record<string, any>) {
   const variantScore = variantCount >= 2 ? 100 : variantCount * 50;
 
   const totalScore =
-    priceScore * 0.02 +
+    priceScorePlatform * 0.02 +
     priceTrendScore * 0.02 +
     asinSalesScore * 0.11 +
     salesTrendScore * 0.09 +
@@ -106,14 +115,26 @@ export function computeScores(row: Record<string, any>) {
 
   const platform_score = clamp(totalScore);
 
-  // --- independent score (previous logic) ---
-  const ratingScore = (reviewRating / 5) * 20; // max 20
-  const reviewScore = Math.min(reviewCount / 1000, 1) * 20; // max 20
-  const priceScoreInd = price > 0 ? Math.min(100 / price, 1) * 20 : 0;
-  const salesScore = Math.min(asinSales / 1000, 1) * 20; // max 20
-  const trendScore = Math.min((salesTrend + 100) / 200, 1) * 20; // -100..100 -> 0..20
+  // --- independent site total ---
+  const independentTotal =
+    priceScoreIndependent * 0.08 +
+    priceTrendScore * 0.05 +
+    asinSalesScore * 0.06 +
+    salesTrendScore * 0.06 +
+    parentIncomeScore * 0.06 +
+    asinIncomeScore * 0.06 +
+    reviewFinalScore * 0.12 +
+    sellerScore * 0.08 +
+    lastYearSalesScore * 0.05 +
+    yoyScore * 0.05 +
+    sizeScore * 0.05 +
+    weightScore * 0.04 +
+    storageScore * 0.04 +
+    ageScore * 0.09 +
+    imgScore * 0.03 +
+    variantScore * 0.02;
 
-  const independent_score = ratingScore + reviewScore + trendScore * 2 + priceScoreInd * 1.5;
+  const independent_score = clamp(independentTotal);
 
   return {
     platform_score: Math.round(platform_score * 100) / 100,
