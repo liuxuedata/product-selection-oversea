@@ -25,7 +25,7 @@ type Product = {
   age_months: number | null;
   platform_score: number | null;
   independent_score: number | null;
-  created_at: string | null;
+  imported_at: string | null;
 };
 
 export default function ProductsPage() {
@@ -93,7 +93,7 @@ export default function ProductsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
-        created_at: r.created_at ?? null,
+        imported_at: r.imported_at ?? null,
       }));
       setItems(mapped);
       setTotal(res.count || 0);
@@ -224,91 +224,106 @@ export default function ProductsPage() {
           搜索
         </button>
       </div>
-      <table className="min-w-full text-sm border border-[var(--border)]">
-        <thead className="bg-[var(--muted)]">
-          <tr>
-            {renderHeader('图片', 'image_url')}
-            {renderHeader('标题', 'title')}
-            {renderHeader('ASIN', 'asin')}
-            {renderHeader('品牌', 'brand')}
-            {renderHeader('配送方式', 'shipping')}
-            {renderHeader('类目', 'category')}
-            {renderHeader('价格', 'price', 'text-right')}
-            {renderHeader('评论数量', 'review_count', 'text-right')}
-            {renderHeader('评论评分', 'review_rating', 'text-right')}
-            {renderHeader('第三方卖家', 'third_party_seller')}
-            {renderHeader('卖家国家/地区', 'seller_country')}
-            {renderHeader('活跃卖家数量', 'active_seller_count', 'text-right')}
-            {renderHeader('尺寸分级', 'size_tier')}
-            {renderHeader('长度', 'length', 'text-right')}
-            {renderHeader('宽度', 'width', 'text-right')}
-            {renderHeader('高度', 'height', 'text-right')}
-            {renderHeader('重量', 'weight', 'text-right')}
-            {renderHeader('年龄（月）', 'age_months', 'text-right')}
-            {renderHeader('平台评分', 'platform_score')}
-            {renderHeader('独立站评分', 'independent_score')}
-            {renderHeader('录入时间', 'created_at')}
-          </tr>
-        </thead>
-        <tbody>
-          {display.map((p) => (
-            <tr key={p.id} className="border-t border-[var(--border)]">
-              <td className="p-2">
-                {p.image_url && (
-                  <img
-                    src={p.image_url}
-                    alt={p.title ?? ''}
-                    className="w-24 h-auto"
-                  />
-                )}
-              </td>
-              <td className="p-2">
-                {p.url ? (
-                  <a href={p.url} target="_blank" className="underline">
-                    {p.title || '查看'}
-                  </a>
-                ) : (
-                  p.title
-                )}
-              </td>
-              <td className="p-2">{p.asin}</td>
-              <td className="p-2">{p.brand}</td>
-              <td className="p-2">{p.shipping}</td>
-              <td className="p-2">{p.category}</td>
-              <td className="p-2 text-right">{p.price ?? '-'}</td>
-              <td className="p-2 text-right">{p.review_count ?? '-'}</td>
-              <td className="p-2 text-right">{p.review_rating ?? '-'}</td>
-              <td className="p-2">{p.third_party_seller}</td>
-              <td className="p-2">{p.seller_country}</td>
-              <td className="p-2 text-right">{p.active_seller_count ?? '-'}</td>
-              <td className="p-2">{p.size_tier}</td>
-              <td className="p-2 text-right">{p.length ?? '-'}</td>
-              <td className="p-2 text-right">{p.width ?? '-'}</td>
-              <td className="p-2 text-right">{p.height ?? '-'}</td>
-              <td className="p-2 text-right">{p.weight ?? '-'}</td>
-              <td className="p-2 text-right">{p.age_months ?? '-'}</td>
-              <td className="p-2">
-                <ScoreBadge value={p.platform_score ?? 0} />
-              </td>
-              <td className="p-2">
-                <ScoreBadge value={p.independent_score ?? 0} />
-              </td>
-              <td className="p-2 text-right">
-                {p.created_at
-                  ? new Date(p.created_at).toLocaleDateString()
-                  : '-'}
-              </td>
-            </tr>
-          ))}
-          {!display.length && (
+      <div className="overflow-x-auto rounded border border-[var(--border)]">
+        <table className="min-w-full text-sm">
+          <thead className="bg-[var(--muted)]">
             <tr>
-              <td className="p-2 text-center" colSpan={21}>
-                暂无数据
-              </td>
+              {renderHeader('图片', 'image_url')}
+              {renderHeader('标题', 'title')}
+              {renderHeader('ASIN', 'asin')}
+              {renderHeader('品牌', 'brand')}
+              {renderHeader('配送方式', 'shipping')}
+              {renderHeader('类目', 'category')}
+              {renderHeader('价格', 'price', 'text-right')}
+              {renderHeader('评论数量', 'review_count', 'text-right')}
+              {renderHeader('评论评分', 'review_rating', 'text-right')}
+              {renderHeader('第三方卖家', 'third_party_seller')}
+              {renderHeader('卖家国家/地区', 'seller_country')}
+              {renderHeader('活跃卖家数量', 'active_seller_count', 'text-right')}
+              {renderHeader('尺寸分级', 'size_tier')}
+              {renderHeader('长度', 'length', 'text-right')}
+              {renderHeader('宽度', 'width', 'text-right')}
+              {renderHeader('高度', 'height', 'text-right')}
+              {renderHeader('重量', 'weight', 'text-right')}
+              {renderHeader('年龄（月）', 'age_months', 'text-right')}
+              {renderHeader('平台评分', 'platform_score')}
+              {renderHeader('独立站评分', 'independent_score')}
+              {renderHeader('录入时间', 'imported_at')}
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {display.map((p) => (
+              <tr
+                key={p.id}
+                className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
+              >
+                <td className="p-2">
+                  {p.image_url && (
+                    <img
+                      src={p.image_url}
+                      alt={p.title ?? ''}
+                      className="w-32 h-32 object-contain"
+                    />
+                  )}
+                </td>
+                <td className="p-2 max-w-[200px]">
+                  {p.url ? (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      className="block truncate whitespace-nowrap hover:underline"
+                      title={p.title ?? ''}
+                    >
+                      {p.title || '查看'}
+                    </a>
+                  ) : (
+                    <span
+                      className="block truncate whitespace-nowrap"
+                      title={p.title ?? ''}
+                    >
+                      {p.title}
+                    </span>
+                  )}
+                </td>
+                <td className="p-2">{p.asin}</td>
+                <td className="p-2">{p.brand}</td>
+                <td className="p-2">{p.shipping}</td>
+                <td className="p-2">{p.category}</td>
+                <td className="p-2 text-right">{p.price ?? '-'}</td>
+                <td className="p-2 text-right">{p.review_count ?? '-'}</td>
+                <td className="p-2 text-right">{p.review_rating ?? '-'}</td>
+                <td className="p-2">{p.third_party_seller}</td>
+                <td className="p-2">{p.seller_country}</td>
+                <td className="p-2 text-right">{p.active_seller_count ?? '-'}</td>
+                <td className="p-2">{p.size_tier}</td>
+                <td className="p-2 text-right">{p.length ?? '-'}</td>
+                <td className="p-2 text-right">{p.width ?? '-'}</td>
+                <td className="p-2 text-right">{p.height ?? '-'}</td>
+                <td className="p-2 text-right">{p.weight ?? '-'}</td>
+                <td className="p-2 text-right">{p.age_months ?? '-'}</td>
+                <td className="p-2">
+                  <ScoreBadge value={p.platform_score ?? 0} />
+                </td>
+                <td className="p-2">
+                  <ScoreBadge value={p.independent_score ?? 0} />
+                </td>
+                <td className="p-2 text-right">
+                  {p.imported_at
+                    ? new Date(p.imported_at).toLocaleDateString()
+                    : '-'}
+                </td>
+              </tr>
+            ))}
+            {!display.length && (
+              <tr>
+                <td className="p-2 text-center" colSpan={21}>
+                  暂无数据
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
       <div className="flex items-center gap-2">
         <button
           className="px-2 py-1 border"
