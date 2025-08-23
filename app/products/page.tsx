@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
-import { SCORE_TIERS } from "@/utils/score";
 
 type Product = {
   id: string;
@@ -33,14 +32,8 @@ export default function ProductsPage() {
 
   useEffect(() => {
     async function load() {
-      const files = await fetch("/api/files").then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
-      const latest = files[0];
-      const res = await fetch(`/api/files/${latest.id}/rows?limit=1000`).then((r) =>
-        r.json()
-      );
+      const res = await fetch(`/api/products?limit=100`).then((r) => r.json());
       const rows = res.rows || [];
-      console.log('fetched rows', rows.length);
       const mapped: Product[] = rows.map((r: any) => ({
         id: r.row_id,
         url: r.url ?? null,
@@ -65,13 +58,7 @@ export default function ProductsPage() {
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
       }));
-      const filtered = mapped.filter(
-        (p) =>
-          Math.max(p.platform_score ?? 0, p.independent_score ?? 0) <
-          SCORE_TIERS.MIN
-      );
-      console.log('products after filter', filtered.length);
-      setItems(filtered);
+      setItems(mapped);
     }
     load();
   }, []);
@@ -159,4 +146,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
