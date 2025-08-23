@@ -35,7 +35,7 @@ Supabase 数据库初始化
 
 -- Database initialization script for product scoring -- Creates tables, indexes, view, and inserts default scoring profiles and revisions.
 
--- 1) File dimension table create table if not exists blackbox_files ( id uuid primary key default gen_random_uuid(), filename text not null, sheet_name text, row_count int, column_names jsonb, uploaded_by text, uploaded_at timestamptz default now() );
+-- 1) File dimension table create table if not exists blackbox_files ( id uuid primary key default gen_random_uuid(), filename text not null, sheet_name text, row_count int, column_names jsonb, uploaded_by text, inserted_count int default 0, skipped_count int default 0, invalid_count int default 0, uploaded_at timestamptz default now() );
 
 -- 2) Row dimension table with original data create table if not exists blackbox_rows ( id uuid primary key default gen_random_uuid(), file_id uuid not null references blackbox_files(id) on delete cascade, row_index int, asin text, url text, title text, data jsonb not null, inserted_at timestamptz default now(), asin_norm text generated always as (nullif(lower(btrim(asin)), '')) stored, url_norm text generated always as (nullif(lower(btrim(url)), '')) stored ); create unique index if not exists uq_blackbox_rows_asin_norm on blackbox_rows(asin_norm) where asin_norm is not null; create unique index if not exists uq_blackbox_rows_url_norm on blackbox_rows(url_norm) where url_norm is not null; create index if not exists idx_blackbox_rows_file on blackbox_rows(file_id);
 
@@ -396,6 +396,9 @@ create table if not exists blackbox_files (
   row_count int,
   column_names jsonb,
   uploaded_by text,
+  inserted_count int default 0,
+  skipped_count int default 0,
+  invalid_count int default 0,
   uploaded_at timestamptz default now()
 );
 
