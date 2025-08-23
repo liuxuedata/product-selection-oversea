@@ -8,11 +8,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { data, error } = await supabase
     .from('v_blackbox_rows_with_scores')
-    .select('category', { distinct: true })
+    .select('category')
     .not('category', 'is', null)
     .order('category');
 
   if (error) return res.status(500).json({ error: error.message });
-  const categories = data.map((row: any) => row.category);
+  const categories = Array.from(
+    new Set((data || []).map((row: { category: string }) => row.category))
+  );
   return res.status(200).json({ categories });
 }
