@@ -4,6 +4,7 @@ import type { File as FormidableFile, Files as FormidableFiles, Fields } from 'f
 import fs from 'fs';
 import { supabase } from '@/lib/supabase';
 import { parseExcelToRows } from '@/utils/parseExcel';
+import { computeScores } from '@/lib/scoring';
 
 // 关闭 Next 自带 bodyParser，交给 formidable
 export const config = { api: { bodyParser: false } };
@@ -129,11 +130,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: r
       };
 
-      const { error: insErr } = await supabase.from('blackbox_rows').insert(payload);
+      const { data: insertedRow, error: insErr } = await supabase
+        .from('blackbox_rows')
+        .insert(payload)
+        .select('id')
+        .single();
       if (insErr) {
         if ((insErr as any).code === '23505') { skipped++; continue; } // 唯一冲突 => 跳过
         throw insErr; // 其他错误直接抛
       }
+
+      const scores = computeScores(payload);
+      await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
       inserted++;
     }
 
