@@ -256,42 +256,45 @@ export default function ProductsPage() {
                 key={p.id}
                 className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
               >
-                <td className="p-2 w-40">
-                  {p.url ? (
-                    <a
-                      href={p.url}
-                      target="_blank"
-                      className="block text-center hover:underline"
-                      title={p.title ?? ''}
-                    >
-                      {p.image_url && (
-                        <img
-                          src={p.image_url}
-                          alt={p.title ?? ''}
-                          style={{ width: 150, height: 150 }}
-                          className="object-contain mx-auto"
-                        />
-                      )}
-                      <span className="mt-1 block truncate whitespace-nowrap">
-                        {p.title || '查看'}
-                      </span>
-                    </a>
-                  ) : (
-                    <div className="text-center">
-                      {p.image_url && (
-                        <img
-                          src={p.image_url}
-                          alt={p.title ?? ''}
-                          style={{ width: 150, height: 150 }}
-                          className="object-contain mx-auto"
-                        />
-                      )}
-                      <span className="mt-1 block truncate whitespace-nowrap" title={p.title ?? ''}>
-                        {p.title}
-                      </span>
-                    </div>
-                  )}
-                </td>
+                  <td className="p-2" style={{ width: 150 }}>
+                    {p.url ? (
+                      <a
+                        href={p.url}
+                        target="_blank"
+                        className="block w-[150px] text-center hover:underline"
+                        title={p.title ?? ''}
+                      >
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt={p.title ?? ''}
+                            style={{ width: 150, height: 150 }}
+                            className="object-contain mx-auto"
+                          />
+                        )}
+                        <span className="mt-1 block w-[150px] truncate whitespace-nowrap">
+                          {p.title || '查看'}
+                        </span>
+                      </a>
+                    ) : (
+                      <div className="text-center w-[150px]">
+                        {p.image_url && (
+                          <img
+                            src={p.image_url}
+                            alt={p.title ?? ''}
+                            style={{ width: 150, height: 150 }}
+                            className="object-contain mx-auto"
+                          />
+                        )}
+                        <span
+                          className="mt-1 block w-[150px] truncate whitespace-nowrap"
+                          title={p.title ?? ''}
+                        >
+                          {p.title}
+                        </span>
+                      </div>
+                    )}
+                  </td>
                 <td className="p-2">{p.asin}</td>
                 <td className="p-2">{p.brand}</td>
                 <td className="p-2">{p.shipping}</td>

@@ -37,7 +37,7 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
           setStatus('完成');
           setMessage(`成功 ${data.stats.inserted} 条`);
           onUploaded?.();
-          router.push(`/recommendations/platform`);
+          router.push(`/recommendations`);
         } else {
           setStatus('上传失败');
           setMessage(data.error || 'Upload failed');
