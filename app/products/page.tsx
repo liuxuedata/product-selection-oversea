@@ -36,7 +36,7 @@ export default function ProductsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const [draft, setDraft] = useState({
     platformMin: '',
     platformMax: '',
@@ -53,6 +53,14 @@ export default function ProductsPage() {
       setCategories(res.categories || []);
     }
     loadCategories();
+  }, []);
+
+  useEffect(() => {
+    function handleClick() {
+      setPreviewId(null);
+    }
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
   }, []);
 
   useEffect(() => {
@@ -259,15 +267,32 @@ export default function ProductsPage() {
                 key={p.id}
                 className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
               >
-                <td className="p-2">
+                <td className="p-2 relative">
                   {p.image_url && (
-                    <img
-                      src={p.image_url}
-                      alt={p.title ?? ''}
-                      style={{ width: 50, height: 50 }}
-                      className="object-contain cursor-pointer"
-                      onClick={() => setPreview(p.image_url!)}
-                    />
+                    <>
+                      <img
+                        src={p.image_url}
+                        alt={p.title ?? ''}
+                        style={{ width: 100, height: 100 }}
+                        className="object-contain cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewId((id) => (id === p.id ? null : p.id));
+                        }}
+                      />
+                      {previewId === p.id && (
+                        <div
+                          className="absolute top-0 left-full ml-2 p-1 bg-white border shadow-lg z-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <img
+                            src={p.image_url}
+                            alt="预览"
+                            className="max-w-xs max-h-72 object-contain"
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </td>
                 <td className="p-2 max-w-[200px]">
@@ -327,17 +352,6 @@ export default function ProductsPage() {
             )}
           </tbody>
         </table>
-      </div>
-      <div className="w-72 h-72 border border-[var(--border)] flex items-center justify-center">
-        {preview ? (
-          <img
-            src={preview}
-            alt="预览"
-            className="max-w-full max-h-full object-contain"
-          />
-        ) : (
-          <span className="text-xs text-gray-500">点击图片预览</span>
-        )}
       </div>
     </div>
     <div className="flex items-center gap-2">
