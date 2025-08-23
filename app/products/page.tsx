@@ -36,7 +36,6 @@ export default function ProductsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
-  const [previewId, setPreviewId] = useState<string | null>(null);
   const [draft, setDraft] = useState({
     platformMin: '',
     platformMax: '',
@@ -54,15 +53,6 @@ export default function ProductsPage() {
     }
     loadCategories();
   }, []);
-
-  useEffect(() => {
-    function handleClick() {
-      setPreviewId(null);
-    }
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, []);
-
   useEffect(() => {
     async function load() {
       const files = await fetch('/api/files').then((r) => r.json());
@@ -238,8 +228,7 @@ export default function ProductsPage() {
           <table className="min-w-full text-sm">
             <thead className="bg-[var(--muted)]">
               <tr>
-              {renderHeader('图片', 'image_url')}
-              {renderHeader('标题', 'title')}
+              {renderHeader('产品', 'title')}
               {renderHeader('ASIN', 'asin')}
               {renderHeader('品牌', 'brand')}
               {renderHeader('配送方式', 'shipping')}
@@ -267,51 +256,40 @@ export default function ProductsPage() {
                 key={p.id}
                 className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
               >
-                <td className="p-2 relative">
-                  {p.image_url && (
-                    <>
-                      <img
-                        src={p.image_url}
-                        alt={p.title ?? ''}
-                        style={{ width: 100, height: 100 }}
-                        className="object-contain cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPreviewId((id) => (id === p.id ? null : p.id));
-                        }}
-                      />
-                      {previewId === p.id && (
-                        <div
-                          className="absolute top-0 left-full ml-2 p-1 bg-white border shadow-lg z-10"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <img
-                            src={p.image_url}
-                            alt="预览"
-                            className="max-w-xs max-h-72 object-contain"
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </td>
-                <td className="p-2 max-w-[200px]">
+                <td className="p-2 w-40">
                   {p.url ? (
                     <a
                       href={p.url}
                       target="_blank"
-                      className="block truncate whitespace-nowrap hover:underline"
+                      className="block text-center hover:underline"
                       title={p.title ?? ''}
                     >
-                      {p.title || '查看'}
+                      {p.image_url && (
+                        <img
+                          src={p.image_url}
+                          alt={p.title ?? ''}
+                          style={{ width: 150, height: 150 }}
+                          className="object-contain mx-auto"
+                        />
+                      )}
+                      <span className="mt-1 block truncate whitespace-nowrap">
+                        {p.title || '查看'}
+                      </span>
                     </a>
                   ) : (
-                    <span
-                      className="block truncate whitespace-nowrap"
-                      title={p.title ?? ''}
-                    >
-                      {p.title}
-                    </span>
+                    <div className="text-center">
+                      {p.image_url && (
+                        <img
+                          src={p.image_url}
+                          alt={p.title ?? ''}
+                          style={{ width: 150, height: 150 }}
+                          className="object-contain mx-auto"
+                        />
+                      )}
+                      <span className="mt-1 block truncate whitespace-nowrap" title={p.title ?? ''}>
+                        {p.title}
+                      </span>
+                    </div>
                   )}
                 </td>
                 <td className="p-2">{p.asin}</td>
@@ -345,7 +323,7 @@ export default function ProductsPage() {
             ))}
             {!display.length && (
               <tr>
-                <td className="p-2 text-center" colSpan={21}>
+                <td className="p-2 text-center" colSpan={20}>
                   暂无数据
                 </td>
               </tr>
