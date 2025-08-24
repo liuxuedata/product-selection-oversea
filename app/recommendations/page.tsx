@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import mockProducts from "@/app/api/mock/products.json";
 
 type Product = {
   id: string;
@@ -41,54 +42,110 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     async function loadCategories() {
-      const res = await fetch('/api/categories').then((r) => r.json());
-      setCategories(res.categories || []);
+      try {
+        const res = await fetch('/api/categories').then((r) => r.json());
+        if (Array.isArray(res.categories) && res.categories.length) {
+          setCategories(res.categories);
+          return;
+        }
+      } catch (err) {
+        console.error('fetch categories failed', err);
+      }
+      const unique = Array.from(
+        new Set(
+          (mockProducts.items || []).map((p: any) => p.category).filter(Boolean)
+        )
+      );
+      setCategories(unique);
     }
     loadCategories();
   }, []);
 
   useEffect(() => {
     async function load() {
-      const files = await fetch('/api/files').then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
-      const latest = files[0];
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        platformMin: '55',
+      try {
+        const files = await fetch('/api/files').then((r) => r.json());
+        if (Array.isArray(files) && files.length) {
+          const latest = files[0];
+          const params = new URLSearchParams({
+            page: String(page),
+            limit: String(limit),
+            platformMin: '55',
+          });
+          Object.entries(filters).forEach(([k, v]) => {
+            if (v) params.set(k, v);
+          });
+          const res = await fetch(
+            `/api/files/${latest.id}/rows?${params.toString()}`
+          ).then((r) => r.json());
+          const rows = res.rows || [];
+          const mapped: Product[] = rows.map((r: any) => ({
+            id: r.row_id,
+            url: r.url ?? null,
+            image_url: r.image_url ?? null,
+            asin: r.asin ?? null,
+            title: r.title ?? null,
+            brand: r.brand ?? null,
+            shipping: r.shipping ?? null,
+            category: r.category ?? null,
+            price: r.price ?? null,
+            review_count: r.review_count ?? null,
+            review_rating: r.review_rating ?? null,
+            third_party_seller: r.third_party_seller ?? null,
+            seller_country: r.seller_country ?? null,
+            active_seller_count: r.active_seller_count ?? null,
+            size_tier: r.size_tier ?? null,
+            length: r.length ?? null,
+            width: r.width ?? null,
+            height: r.height ?? null,
+            weight: r.weight ?? null,
+            age_months: r.age_months ?? null,
+            platform_score: r.platform_score ?? null,
+            independent_score: r.independent_score ?? null,
+            imported_at: r.imported_at ?? null,
+          }));
+          setItems(mapped);
+          setTotal(res.count || 0);
+          return;
+        }
+      } catch (err) {
+        console.error('fetch rows failed', err);
+      }
+      const all: Product[] = (mockProducts.items || [])
+        .filter((r: any) => (r.platform_score ?? r.score ?? 0) >= 55)
+        .map((r: any) => ({
+          id: r.id,
+          url: r.url ?? null,
+          image_url: r.image ?? null,
+          asin: r.asin ?? null,
+          title: r.title ?? null,
+          brand: r.brand ?? null,
+          shipping: r.shipping ?? null,
+          category: r.category ?? null,
+          price: r.price ?? null,
+          review_count: r.review_count ?? null,
+          review_rating: r.review_rating ?? null,
+          third_party_seller: r.third_party_seller ?? null,
+          seller_country: r.seller_country ?? null,
+          active_seller_count: r.seller_count ?? null,
+          size_tier: r.size ?? null,
+          length: r.length ?? null,
+          width: r.width ?? null,
+          height: r.height ?? null,
+          weight: r.weight_kg ?? null,
+          age_months: r.age_months ?? null,
+          platform_score: r.platform_score ?? r.score ?? null,
+          independent_score: r.independent_score ?? null,
+          imported_at: r.synced_at ?? null,
+        }));
+      const filtered = all.filter((p) => {
+        if (filters.keyword && !(p.title ?? '').includes(filters.keyword)) return false;
+        if (filters.category && p.category !== filters.category) return false;
+        return true;
       });
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v) params.set(k, v);
-      });
-      const res = await fetch(`/api/files/${latest.id}/rows?${params.toString()}`).then((r) => r.json());
-      const rows = res.rows || [];
-      const mapped: Product[] = rows.map((r: any) => ({
-        id: r.row_id,
-        url: r.url ?? null,
-        image_url: r.image_url ?? null,
-        asin: r.asin ?? null,
-        title: r.title ?? null,
-        brand: r.brand ?? null,
-        shipping: r.shipping ?? null,
-        category: r.category ?? null,
-        price: r.price ?? null,
-        review_count: r.review_count ?? null,
-        review_rating: r.review_rating ?? null,
-        third_party_seller: r.third_party_seller ?? null,
-        seller_country: r.seller_country ?? null,
-        active_seller_count: r.active_seller_count ?? null,
-        size_tier: r.size_tier ?? null,
-        length: r.length ?? null,
-        width: r.width ?? null,
-        height: r.height ?? null,
-        weight: r.weight ?? null,
-        age_months: r.age_months ?? null,
-        platform_score: r.platform_score ?? null,
-        independent_score: r.independent_score ?? null,
-        imported_at: r.imported_at ?? null,
-      }));
-      setItems(mapped);
-      setTotal(res.count || 0);
+      const start = (page - 1) * limit;
+      setItems(filtered.slice(start, start + limit));
+      setTotal(filtered.length);
     }
     load();
   }, [page, limit, filters]);
