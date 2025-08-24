@@ -9,7 +9,7 @@ const navItems = [
 ];
 
 export default function Topbar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   return (
     <header className="h-12 border-b border-[var(--border)] bg-[var(--background)] flex items-center px-4">
       <nav className="flex gap-4">

@@ -8,7 +8,7 @@ const items = [
 ];
 
 export default function TrendsNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   return (
     <nav className="mb-4 flex gap-4 border-b border-[var(--border)]">
       {items.map((item) => {
