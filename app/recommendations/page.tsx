@@ -86,7 +86,13 @@ export default function RecommendationsPage() {
         }));
         setAll(mapped);
         if (!categories.length) {
-          const unique = Array.from(new Set(mapped.map((p) => p.category).filter(Boolean)));
+          const unique = Array.from(
+            new Set(
+              mapped
+                .map((p) => p.category)
+                .filter((c): c is string => Boolean(c))
+            )
+          );
           setCategories(unique);
         }
       } catch (err) {
