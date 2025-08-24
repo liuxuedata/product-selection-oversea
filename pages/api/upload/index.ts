@@ -214,18 +214,19 @@ async function processRows(fileId: number, rows: any[]) {
 
             const FIVE_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 5;
             const createdAt = existing?.created_at ? new Date(existing.created_at) : null;
-            if (createdAt && Date.now() - createdAt.getTime() > FIVE_MONTHS_MS) {
+            const existingId = existing?.id;
+            if (createdAt && existingId && Date.now() - createdAt.getTime() > FIVE_MONTHS_MS) {
               const { data: updated, error: updErr } = await supabase
                 .from('blackbox_rows')
                 .update({ ...payload, created_at: new Date().toISOString() })
-                .eq('id', existing.id)
+                .eq('id', existingId)
                 .select('id')
                 .single();
               if (!updErr && updated) {
                 const scores = computeScores(payload);
                 await supabase
                   .from('product_scores')
-                  .upsert({ row_id: existing.id, ...scores });
+                  .upsert({ row_id: existingId, ...scores });
                 inserted++;
                 continue;
               }
