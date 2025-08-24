@@ -98,18 +98,23 @@ export async function processRows(fileId: string, rows: any[]) {
       data: r
     };
 
+    const scores = computeScores(payload);
+    if ((scores.platform_score ?? 0) === 0 && (scores.independent_score ?? 0) === 0) {
+      invalid++;
+      continue;
+    }
+
     const { data: insertedRow, error: insErr } = await supabase
       .from('blackbox_rows')
       .insert(payload)
-      .select('id')
+      .select('id, imported_at')
       .single();
     if (insErr) {
       if ((insErr as any).code === '23505') { skipped++; continue; }
       throw insErr;
     }
 
-    const scores = computeScores(payload);
-    await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
+    await supabase.from('product_scores').upsert({ row_id: insertedRow.id, imported_at: insertedRow.imported_at, ...scores });
     inserted++;
   }
 
@@ -119,6 +124,8 @@ export async function processRows(fileId: string, rows: any[]) {
       inserted_count: inserted,
       skipped_count: skipped,
       invalid_count: invalid,
+      status: 'processed',
+      processed_at: new Date().toISOString(),
     })
     .eq('id', fileId);
 

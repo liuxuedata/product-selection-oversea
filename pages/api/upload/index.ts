@@ -121,17 +121,24 @@ async function processRows(fileId: string, rows: any[]) {
       sales_review_ratio: pickNumber(r, ['销量评论比', 'Sales/Review Ratio', '销量/评论比', 'Sales Review Ratio']),
       data: r,
     };
+    const scores = computeScores(payload);
+    if ((scores.platform_score ?? 0) === 0 && (scores.independent_score ?? 0) === 0) {
+      invalid++;
+      continue;
+    }
 
     let insertedRowId: string | null = null;
+    let importedAt: string | null = null;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         const { data: insertedRows, error } = await supabase
           .from('blackbox_rows')
           .insert(payload)
-          .select('id')
+          .select('id, imported_at')
           .single();
         if (error) throw error;
         insertedRowId = insertedRows.id;
+        importedAt = insertedRows.imported_at;
         break;
       } catch (err: any) {
         if (err?.code === '23505') {
@@ -151,8 +158,7 @@ async function processRows(fileId: string, rows: any[]) {
     }
 
     if (insertedRowId) {
-      const scores = computeScores(payload);
-      await supabase.from('product_scores').upsert({ row_id: insertedRowId, ...scores });
+      await supabase.from('product_scores').upsert({ row_id: insertedRowId, imported_at: importedAt, ...scores });
       if (rawImage && /^https?:/i.test(rawImage)) {
         tasks.push({ rowId: insertedRowId, url: rawImage });
       }
@@ -162,7 +168,13 @@ async function processRows(fileId: string, rows: any[]) {
 
   await supabase
     .from('blackbox_files')
-    .update({ inserted_count: inserted, skipped_count: skipped, invalid_count: invalid })
+    .update({
+      inserted_count: inserted,
+      skipped_count: skipped,
+      invalid_count: invalid,
+      status: 'processed',
+      processed_at: new Date().toISOString(),
+    })
     .eq('id', fileId);
 
   return { inserted, skipped, invalid, tasks };
