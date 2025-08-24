@@ -152,17 +152,28 @@ async function processRows(fileId: string, rows: any[]) {
 
     if (insertedRowId) {
       const scores = computeScores(payload);
-      await supabase.from('product_scores').upsert({ row_id: insertedRowId, ...scores });
-      if (rawImage && /^https?:/i.test(rawImage)) {
-        tasks.push({ rowId: insertedRowId, url: rawImage });
+      if (scores.platform_score === 0 && scores.independent_score === 0) {
+        await supabase.from('blackbox_rows').delete().eq('id', insertedRowId);
+        invalid++;
+      } else {
+        await supabase.from('product_scores').upsert({ row_id: insertedRowId, ...scores });
+        if (rawImage && /^https?:/i.test(rawImage)) {
+          tasks.push({ rowId: insertedRowId, url: rawImage });
+        }
+        inserted++;
       }
-      inserted++;
     }
   }
 
   await supabase
     .from('blackbox_files')
-    .update({ inserted_count: inserted, skipped_count: skipped, invalid_count: invalid })
+    .update({
+      inserted_count: inserted,
+      skipped_count: skipped,
+      invalid_count: invalid,
+      status: 'done',
+      processed_at: new Date().toISOString(),
+    })
     .eq('id', fileId);
 
   return { inserted, skipped, invalid, tasks };
@@ -218,6 +229,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sheet_name: sheetName,
         row_count: rows.length,
         column_names: columns,
+        status: 'processing',
       })
       .select('id')
       .single();

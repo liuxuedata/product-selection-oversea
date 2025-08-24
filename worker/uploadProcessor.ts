@@ -18,6 +18,7 @@ function pickNumber(row: Record<string, any>, keys: string[]): number | null {
 
 export async function processRows(fileId: string, rows: any[]) {
   let inserted = 0, skipped = 0, invalid = 0;
+  await supabase.from('blackbox_files').update({ status: 'processing' }).eq('id', fileId);
 
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -109,6 +110,11 @@ export async function processRows(fileId: string, rows: any[]) {
     }
 
     const scores = computeScores(payload);
+    if (scores.platform_score === 0 && scores.independent_score === 0) {
+      await supabase.from('blackbox_rows').delete().eq('id', insertedRow.id);
+      invalid++;
+      continue;
+    }
     await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
     inserted++;
   }
@@ -119,6 +125,8 @@ export async function processRows(fileId: string, rows: any[]) {
       inserted_count: inserted,
       skipped_count: skipped,
       invalid_count: invalid,
+      status: 'done',
+      processed_at: new Date().toISOString(),
     })
     .eq('id', fileId);
 
