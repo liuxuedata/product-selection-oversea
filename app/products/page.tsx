@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
-import mockProducts from "@/app/api/mock/products.json";
+import mockProducts from "@/mock/products.json";
 import { logError, logInfo } from "@/lib/logger";
 
 type Product = {
@@ -154,6 +154,11 @@ export default function ProductsPage() {
         if (filters.keyword && !(p.title ?? '').includes(filters.keyword)) return false;
         if (filters.category && p.category !== filters.category) return false;
         return true;
+      });
+      filtered.sort((a, b) => {
+        const ta = a.imported_at ? Date.parse(a.imported_at) : 0;
+        const tb = b.imported_at ? Date.parse(b.imported_at) : 0;
+        return tb - ta;
       });
       const start = (page - 1) * limit;
       const slice = filtered.slice(start, start + limit);

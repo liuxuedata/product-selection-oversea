@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/lib/supabase';
-import mockProducts from '@/app/api/mock/products.json';
+import mockProducts from '@/mock/products.json';
 import { logError, logInfo } from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
