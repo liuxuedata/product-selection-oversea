@@ -44,7 +44,7 @@ SELECT
   r.id AS row_id,
   r.file_id,
   r.row_index,
-  r.created_at,
+  r.inserted_at AS created_at,
   r.asin,
   r.url,
   r.title,
