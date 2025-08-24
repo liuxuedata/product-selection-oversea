@@ -1,13 +1,11 @@
 "use client";
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) {
   const [docType, setDocType] = useState('blackbox');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
   const [message, setMessage] = useState('');
-  const router = useRouter();
 
   const uploadFile = (file: File) => {
     const formData = new FormData();
@@ -34,10 +32,9 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          setStatus('完成');
-          setMessage(`成功 ${data.stats.inserted} 条`);
+          setStatus('任务已创建');
+          setMessage(`任务 ID: ${data.taskId}`);
           onUploaded?.();
-          router.push(`/recommendations`);
         } else {
           setStatus('上传失败');
           setMessage(data.error || 'Upload failed');

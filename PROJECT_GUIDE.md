@@ -51,7 +51,7 @@ Supabase 数据库初始化
 
 注：为节省篇幅，上面 ...平台方案 JSON... 与 ...独立站方案 JSON... 就用你已成功粘贴执行的完整版本。若尚未执行，可使用我之前给你的完整 JSON 版本。
 
-目录结构 product-selection-platform/ ├─ pages/ │ ├─ index.tsx # 首页：上传入口（文件 -> /api/upload） │ ├─ settings.tsx # 评分参数可视化&微调 + 实时预览 + 保存版本 + 全量重算 │ ├─ file/ │ │ └─ [id].tsx # 文件详情（动态全列表 + 分数） │ └─ api/ │ ├─ upload.ts # 上传/解析/入库（去重） │ ├─ files/ │ │ └─ [id]/rows.ts # 分页返回 v_blackbox_rows_with_scores │ ├─ scoring-profiles/ │ │ ├─ index.ts # GET 列表；POST 新建 │ │ └─ [id].ts # GET 最新参数；POST revisions 新版本 │ └─ score/ │ ├─ preview.ts # 预览：params + sampleRows -> 分数（不落库） │ └─ apply.ts # 全量重算：params/profileId + fileId -> 写 product_scores ├─ lib/ │ ├─ supabase.ts # Supabase 客户端 │ └─ scoring/ │ ├─ field.ts # pickNumber / pickString │ ├─ engine.ts # scoreRowByParams（通用执行器） │ └─ mapping.ts # 可选：字段别名/抽取 ├─ utils/ │ └─ parseExcel.ts # 解析 Excel/CSV -> {sheetName, columns, rows} ├─ components/ │ ├─ UploadForm.tsx # 上传组件 │ ├─ DynamicTable.tsx # 虚拟滚动全列表格 │ └─ ScoreChart.tsx # 可选：雷达/柱状 ├─ styles/... ├─ .env.local # Supabase 环境变量 └─ README.md
+目录结构 product-selection-platform/ ├─ pages/ │ ├─ index.tsx # 首页：上传入口（文件 -> /api/upload） │ ├─ settings.tsx # 评分参数可视化&微调 + 实时预览 + 保存版本 + 全量重算 │ ├─ file/ │ │ └─ [id].tsx # 文件详情（动态全列表 + 分数） │ └─ api/ │ ├─ upload/index.ts # 上传入库任务入口 │ ├─ files/ │ │ └─ [id]/rows.ts # 分页返回 v_blackbox_rows_with_scores │ ├─ scoring-profiles/ │ │ ├─ index.ts # GET 列表；POST 新建 │ │ └─ [id].ts # GET 最新参数；POST revisions 新版本 │ └─ score/ │ ├─ preview.ts # 预览：params + sampleRows -> 分数（不落库） │ └─ apply.ts # 全量重算：params/profileId + fileId -> 写 product_scores ├─ lib/ │ ├─ supabase.ts # Supabase 客户端 │ └─ scoring/ │ ├─ field.ts # pickNumber / pickString │ ├─ engine.ts # scoreRowByParams（通用执行器） │ └─ mapping.ts # 可选：字段别名/抽取 ├─ utils/ │ └─ parseExcel.ts # 解析 Excel/CSV -> {sheetName, columns, rows} ├─ components/ │ ├─ UploadForm.tsx # 上传组件 │ ├─ DynamicTable.tsx # 虚拟滚动全列表格 │ └─ ScoreChart.tsx # 可选：雷达/柱状 ├─ styles/... ├─ .env.local # Supabase 环境变量 └─ README.md
 
 环境变量
 
@@ -80,7 +80,7 @@ export function evalExpr(expr: string, x: number, row: Record<string, any>) { //
 
 export function scoreRowByParams(row: Record<string, any>, params: {dimensions: Dimension[]}) { let total = 0; for (const d of params.dimensions || []) { let dimScore = 0; if (d.formula === 'piecewise') { const x = pickNumber(row, d.fieldCandidates || []); dimScore = scorePiecewise(clip(x, d.bounds), d.segments || [], row); } else if (d.formula === 'composite' && d.key === 'review_combo') { const partCount:any = d.parts?.find((p:any)=>p.type==='reviewCount'); const partRate:any = d.parts?.find((p:any)=>p.type==='reviewRating'); const x1 = pickNumber(row, partCount?.fieldCandidates || []); const x2 = pickNumber(row, partRate?.fieldCandidates || []); const s1 = scorePiecewise(x1, partCount?.rules || [], row); const s2 = scorePiecewise(x2, partRate?.rules || [], row); dimScore = s1 * (s2 / 100); } total += Math.max(0, Math.min(100, dimScore)) * (d.weight || 0); } return Math.max(0, Math.min(100, total)); }
 
-API 路由 6.1 /pages/api/upload.ts（去重入库） import type { NextApiRequest, NextApiResponse } from 'next'; import formidable from 'formidable'; import fs from 'fs'; import { supabase } from '@/lib/supabase'; import { parseExcelToRows } from '@/utils/parseExcel';
+API 路由 6.1 /pages/api/upload/index.ts（创建后台入库任务） import type { NextApiRequest, NextApiResponse } from 'next'; import formidable from 'formidable'; import fs from 'fs'; import { supabase } from '@/lib/supabase'; import { parseExcelToRows } from '@/utils/parseExcel';
 export const config = { api: { bodyParser: false } };
 
 function pickString(row: Record<string,any>, keys: string[]) { for (const k of keys) { const v = row?.[k]; if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim(); } return null; }
@@ -120,7 +120,7 @@ for (let i = 0; i < rows.length; i++) {
   inserted++;
 }
 
-res.status(200).json({ fileId: f.id, stats: { inserted, skipped, invalid } });
+res.status(200).json({ taskId: t.id });
 }); }
 
 6.2 /pages/api/files/[id]/rows.ts（分页读取） import type { NextApiRequest, NextApiResponse } from 'next'; import { supabase } from '@/lib/supabase';
@@ -220,7 +220,18 @@ export default function Home() { return (
 
 export default function UploadForm() { const [file, setFile] = useState<File | null>(null); const [msg, setMsg] = useState('');
 
-const handleUpload = async () => { if (!file) return; const fd = new FormData(); fd.append('file', file); const res = await fetch('/api/upload', { method: 'POST', body: fd }); const data = await res.json(); if (!res.ok) { setMsg(data.error || '上传失败'); return; } setMsg(完成：新增 ${data.stats.inserted} 行，跳过 ${data.stats.skipped} 行，非法 ${data.stats.invalid} 行。FileId=${data.fileId}); // 可跳转到 /file/${data.fileId} };
+const handleUpload = async () => {
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  if (!res.ok) {
+    setMsg(data.error || '上传失败');
+    return;
+  }
+  setMsg(`任务已创建：${data.taskId}`);
+};
 
 return (
 
@@ -527,7 +538,7 @@ create table if not exists scoring_profile_revisions (
    - `lib/scoring/field.ts`  
    - `lib/scoring/engine.ts`  
    - `utils/parseExcel.ts`  
-   - `pages/api/upload.ts`  
+   - `pages/api/upload/index.ts`
    - `pages/file/[id].tsx`  
    - `pages/product/[id].tsx`  
    - `pages/settings.tsx`  
