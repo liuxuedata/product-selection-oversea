@@ -1,11 +1,46 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) {
   const [docType, setDocType] = useState('blackbox');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('');
   const [message, setMessage] = useState('');
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const pollTask = useCallback((id: string) => {
+    localStorage.setItem('uploadTaskId', id);
+    timer.current && clearInterval(timer.current);
+    timer.current = setInterval(async () => {
+      try {
+        const info = await fetch(`/api/upload/tasks/${id}`).then(r => r.json());
+        setProgress(info.progress ?? 0);
+        setStatus(info.status);
+        if (info.status === 'done') {
+          clearInterval(timer.current!);
+          localStorage.removeItem('uploadTaskId');
+          setMessage('完成');
+          onUploaded?.();
+        } else if (info.status === 'error') {
+          clearInterval(timer.current!);
+          localStorage.removeItem('uploadTaskId');
+          setMessage(info.error || '任务失败');
+        }
+      } catch (e) {
+        // ignore polling errors
+      }
+    }, 1000);
+  }, [onUploaded]);
+
+  useEffect(() => {
+    const existing = localStorage.getItem('uploadTaskId');
+    if (existing) {
+      pollTask(existing);
+    }
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+  }, [pollTask]);
 
   const uploadFile = (file: File) => {
     const formData = new FormData();
@@ -34,15 +69,16 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
         if (xhr.status >= 200 && xhr.status < 300) {
           setStatus('任务已创建');
           setMessage(`任务 ID: ${data.taskId}`);
-          onUploaded?.();
+          setProgress(0);
+          pollTask(data.taskId);
         } else {
           setStatus('上传失败');
           setMessage(data.error || 'Upload failed');
+          setProgress(0);
         }
       } catch (err) {
         setStatus('上传失败');
         setMessage('Upload failed');
-      } finally {
         setProgress(0);
       }
     };

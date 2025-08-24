@@ -16,8 +16,14 @@ function pickNumber(row: Record<string, any>, keys: string[]): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-export async function processRows(fileId: string, rows: any[]) {
-  let inserted = 0, skipped = 0, invalid = 0;
+export async function processRows(
+  fileId: string,
+  rows: any[],
+  taskId: string
+) {
+  let inserted = 0,
+    skipped = 0,
+    invalid = 0;
 
   for (let i = 0; i < rows.length; i++) {
     const r = rows[i];
@@ -111,6 +117,12 @@ export async function processRows(fileId: string, rows: any[]) {
     const scores = computeScores(payload);
     await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
     inserted++;
+
+    const progress = Math.round(((i + 1) / rows.length) * 100);
+    await supabase
+      .from('upload_tasks')
+      .update({ progress })
+      .eq('id', taskId);
   }
 
   const { error: updErr } = await supabase
@@ -142,17 +154,29 @@ async function processTasks() {
   if (error || !tasks) return;
 
   for (const task of tasks) {
-    await supabase.from('upload_tasks').update({ status: 'processing', started_at: new Date().toISOString() }).eq('id', task.id);
+    await supabase
+      .from('upload_tasks')
+      .update({ status: 'processing', started_at: new Date().toISOString(), progress: 0 })
+      .eq('id', task.id);
     try {
-      const stats = await processRows(task.file_id, task.rows);
+      const stats = await processRows(task.file_id, task.rows, task.id);
       await supabase
         .from('upload_tasks')
-        .update({ status: 'done', finished_at: new Date().toISOString(), result: stats })
+        .update({
+          status: 'done',
+          finished_at: new Date().toISOString(),
+          result: stats,
+          progress: 100,
+        })
         .eq('id', task.id);
     } catch (err: any) {
       await supabase
         .from('upload_tasks')
-        .update({ status: 'error', error: err?.message, finished_at: new Date().toISOString() })
+        .update({
+          status: 'error',
+          error: err?.message,
+          finished_at: new Date().toISOString(),
+        })
         .eq('id', task.id);
     }
   }

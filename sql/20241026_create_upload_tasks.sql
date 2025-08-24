@@ -5,6 +5,7 @@ create table if not exists upload_tasks (
   sheet_name text,
   columns jsonb,
   status text not null default 'pending',
+  progress integer default 0,
   result jsonb,
   error text,
   created_at timestamptz default now(),

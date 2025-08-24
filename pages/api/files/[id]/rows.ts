@@ -87,34 +87,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (keyword) alt = alt.ilike('title', `%${keyword}%`);
   if (category) alt = alt.eq('category', category);
 
-  const { data: raw, error: err2, count: cnt2 } = await alt
-    .order('imported_at', { ascending: false })
-    .range(from, to);
+  const { data: raw, error: err2 } = await alt.order('imported_at', {
+    ascending: false,
+  });
 
   if (err2) {
     await logError('query blackbox_rows failed', err2);
     return res.status(500).json({ error: err2.message });
   }
 
-  const rows = (raw || []).map((r: any) => ({
-    ...r,
-    imported_at: r.imported_at ?? r.inserted_at ?? r.created_at ?? null,
-    platform_score: null,
-    independent_score: null,
-  }));
-
+  let rows = raw || [];
+  const enriched: any[] = [];
   if (rows.length) {
     const { computeScores } = await import('@/lib/scoring');
     for (const r of rows) {
-      const scores = computeScores(r);
+      const row: any = {
+        ...r,
+        imported_at: r.imported_at ?? r.inserted_at ?? r.created_at ?? null,
+      };
+      const scores = computeScores(row);
       await supabase
         .from('product_scores')
         .upsert({ row_id: r.id, ...scores });
-      r.platform_score = scores.platform_score;
-      r.independent_score = scores.independent_score;
+      row.platform_score = scores.platform_score;
+      row.independent_score = scores.independent_score;
+      if (platformMin && row.platform_score < Number(platformMin)) continue;
+      if (platformMax && row.platform_score > Number(platformMax)) continue;
+      if (independentMin && row.independent_score < Number(independentMin))
+        continue;
+      if (independentMax && row.independent_score > Number(independentMax))
+        continue;
+      enriched.push(row);
     }
   }
 
-  await logInfo('rows fetched fallback', { fileId: id, count: cnt2 });
-  return res.status(200).json({ rows, count: cnt2 });
+  if (minScore !== null && minScore >= 55) {
+    rows = enriched.slice(0, 500);
+  } else {
+    rows = enriched;
+  }
+  const total = rows.length;
+  const paged = rows.slice(from, from + limit);
+  await logInfo('rows fetched fallback', { fileId: id, count: total });
+  return res.status(200).json({ rows: paged, count: total });
 }
