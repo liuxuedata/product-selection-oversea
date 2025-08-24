@@ -12,9 +12,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .not('category', 'is', null)
     .order('category');
 
-  if (error) return res.status(500).json({ error: error.message });
+  let rows = data;
+  if (error) {
+    console.error('fetch categories failed', error.message);
+    const fallback = await supabase
+      .from('blackbox_rows')
+      .select('category')
+      .not('category', 'is', null)
+      .order('category');
+    if (fallback.error)
+      return res.status(500).json({ error: fallback.error.message });
+    rows = fallback.data;
+  }
+
   const categories = Array.from(
-    new Set((data || []).map((row: { category: string }) => row.category))
+    new Set((rows || []).map((row: { category: string }) => row.category))
   );
   return res.status(200).json({ categories });
 }

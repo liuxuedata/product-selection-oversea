@@ -3,14 +3,30 @@ import { supabase } from '@/lib/supabase';
 import mockProducts from '@/app/api/mock/products.json';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method !== 'GET')
+    return res.status(405).json({ error: 'Method Not Allowed' });
+
   const { id } = req.query;
+
   const { data, error } = await supabase
     .from('v_blackbox_rows_with_scores')
     .select('*')
     .eq('row_id', id)
     .single();
+
   if (data) return res.status(200).json({ row: data });
+
+  console.error('query v_blackbox_rows_with_scores failed', error?.message);
+
+  // Fallback to raw table if the view is unavailable
+  const { data: raw, error: err2 } = await supabase
+    .from('blackbox_rows')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (raw)
+    return res.status(200).json({ row: { ...raw, platform_score: null, independent_score: null } });
+
   const fallback = (mockProducts.items as any[]).find((r) => r.id === id);
   if (fallback) {
     return res.status(200).json({
@@ -41,6 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     });
   }
+
+  if (err2) return res.status(500).json({ error: err2.message });
   if (error) return res.status(500).json({ error: error.message });
   return res.status(404).json({ error: 'Not Found' });
 }
