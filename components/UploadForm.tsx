@@ -22,9 +22,9 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
 
     xhr.upload.onprogress = e => {
       if (e.lengthComputable) {
-        const p = Math.round((e.loaded / e.total) * 100);
+        const p = Math.round((e.loaded / e.total) * 50);
         setProgress(p);
-        if (p === 100) {
+        if (p === 50) {
           setStatus('加载中...');
         }
       }
@@ -34,18 +34,16 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          setStatus('完成');
-          setMessage(`成功 ${data.stats.inserted} 条`);
-          onUploaded?.();
-          router.push(`/recommendations`);
+          setStatus('处理中...');
+          pollStatus(data.fileId);
         } else {
           setStatus('上传失败');
           setMessage(data.error || 'Upload failed');
+          setProgress(0);
         }
       } catch (err) {
         setStatus('上传失败');
         setMessage('Upload failed');
-      } finally {
         setProgress(0);
       }
     };
@@ -57,6 +55,36 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
     };
 
     xhr.send(formData);
+    const pollStatus = (fileId: number) => {
+      const timer = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/upload/status?id=${fileId}`);
+          const data = await res.json();
+          if (res.ok) {
+            const p = 50 + Math.round((data.progress || 0) * 50);
+            setProgress(p);
+            if (data.completed) {
+              setStatus('完成');
+              setMessage(`成功 ${data.stats.inserted} 条`);
+              clearInterval(timer);
+              onUploaded?.();
+              router.push(`/recommendations`);
+              setProgress(0);
+            }
+          } else {
+            setStatus('上传失败');
+            setMessage(data.error || 'Upload failed');
+            clearInterval(timer);
+            setProgress(0);
+          }
+        } catch (err) {
+          setStatus('上传失败');
+          setMessage('Upload failed');
+          clearInterval(timer);
+          setProgress(0);
+        }
+      }, 1000);
+    };
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
