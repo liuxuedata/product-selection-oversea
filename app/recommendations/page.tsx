@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
-import mockProducts from "@/app/api/mock/products.json";
 
 type Product = {
   id: string;
@@ -33,9 +32,6 @@ export default function RecommendationsPage() {
   const [items, setItems] = useState<Product[]>([]);
   const [sortKey, setSortKey] = useState<keyof Product | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [draft, setDraft] = useState({ keyword: '', category: '' });
   const [filters, setFilters] = useState(draft);
@@ -46,17 +42,10 @@ export default function RecommendationsPage() {
         const res = await fetch('/api/categories').then((r) => r.json());
         if (Array.isArray(res.categories) && res.categories.length) {
           setCategories(res.categories);
-          return;
         }
       } catch (err) {
         console.error('fetch categories failed', err);
       }
-      const unique = Array.from(
-        new Set(
-          (mockProducts.items || []).map((p: any) => p.category).filter(Boolean)
-        )
-      );
-      setCategories(unique);
     }
     loadCategories();
   }, []);
@@ -64,59 +53,18 @@ export default function RecommendationsPage() {
   useEffect(() => {
     async function load() {
       try {
-        const files = await fetch('/api/files').then((r) => r.json());
-        if (Array.isArray(files) && files.length) {
-          const latest = files[0];
-          const params = new URLSearchParams({
-            page: String(page),
-            limit: String(limit),
-            platformMin: '55',
-          });
-          Object.entries(filters).forEach(([k, v]) => {
-            if (v) params.set(k, v);
-          });
-          const res = await fetch(
-            `/api/files/${latest.id}/rows?${params.toString()}`
-          ).then((r) => r.json());
-          const rows = res.rows || [];
-          const mapped: Product[] = rows.map((r: any) => ({
-            id: r.row_id,
-            url: r.url ?? null,
-            image_url: r.image_url ?? null,
-            asin: r.asin ?? null,
-            title: r.title ?? null,
-            brand: r.brand ?? null,
-            shipping: r.shipping ?? null,
-            category: r.category ?? null,
-            price: r.price ?? null,
-            review_count: r.review_count ?? null,
-            review_rating: r.review_rating ?? null,
-            third_party_seller: r.third_party_seller ?? null,
-            seller_country: r.seller_country ?? null,
-            active_seller_count: r.active_seller_count ?? null,
-            size_tier: r.size_tier ?? null,
-            length: r.length ?? null,
-            width: r.width ?? null,
-            height: r.height ?? null,
-            weight: r.weight ?? null,
-            age_months: r.age_months ?? null,
-            platform_score: r.platform_score ?? null,
-            independent_score: r.independent_score ?? null,
-            imported_at: r.imported_at ?? null,
-          }));
-          setItems(mapped);
-          setTotal(res.count || 0);
-          return;
-        }
-      } catch (err) {
-        console.error('fetch rows failed', err);
-      }
-      const all: Product[] = (mockProducts.items || [])
-        .filter((r: any) => (r.platform_score ?? r.score ?? 0) >= 55)
-        .map((r: any) => ({
-          id: r.id,
+        const params = new URLSearchParams({ recommend: '1' });
+        Object.entries(filters).forEach(([k, v]) => {
+          if (v) params.set(k, v);
+        });
+        const res = await fetch(
+          `/api/products/latest?${params.toString()}`
+        ).then((r) => r.json());
+        const rows = res.rows || [];
+        const mapped: Product[] = rows.map((r: any) => ({
+          id: r.row_id,
           url: r.url ?? null,
-          image_url: r.image ?? null,
+          image_url: r.image_url ?? null,
           asin: r.asin ?? null,
           title: r.title ?? null,
           brand: r.brand ?? null,
@@ -127,28 +75,25 @@ export default function RecommendationsPage() {
           review_rating: r.review_rating ?? null,
           third_party_seller: r.third_party_seller ?? null,
           seller_country: r.seller_country ?? null,
-          active_seller_count: r.seller_count ?? null,
-          size_tier: r.size ?? null,
+          active_seller_count: r.active_seller_count ?? null,
+          size_tier: r.size_tier ?? null,
           length: r.length ?? null,
           width: r.width ?? null,
           height: r.height ?? null,
-          weight: r.weight_kg ?? null,
+          weight: r.weight ?? null,
           age_months: r.age_months ?? null,
-          platform_score: r.platform_score ?? r.score ?? null,
+          platform_score: r.platform_score ?? null,
           independent_score: r.independent_score ?? null,
-          imported_at: r.synced_at ?? null,
+          imported_at: r.imported_at ?? null,
         }));
-      const filtered = all.filter((p) => {
-        if (filters.keyword && !(p.title ?? '').includes(filters.keyword)) return false;
-        if (filters.category && p.category !== filters.category) return false;
-        return true;
-      });
-      const start = (page - 1) * limit;
-      setItems(filtered.slice(start, start + limit));
-      setTotal(filtered.length);
+        setItems(mapped);
+      } catch (err) {
+        console.error('fetch recommendations failed', err);
+        setItems([]);
+      }
     }
     load();
-  }, [page, limit, filters]);
+  }, [filters]);
 
   function handleSort(key: keyof Product) {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -222,7 +167,6 @@ export default function RecommendationsPage() {
         <button
           className="border px-3 py-1"
           onClick={() => {
-            setPage(1);
             setFilters(draft);
           }}
         >
@@ -336,48 +280,7 @@ export default function RecommendationsPage() {
         </tbody>
       </table>
 
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-2">
-          <span>每页</span>
-          <select
-            className="border px-1"
-            value={limit}
-            onChange={(e) => {
-              setPage(1);
-              setLimit(Number(e.target.value));
-            }}
-          >
-            {[10, 20, 50, 100].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            className="border px-2 py-1"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            上一页
-          </button>
-          <span>
-            {page} / {Math.max(1, Math.ceil(total / limit))}
-          </span>
-          <button
-            className="border px-2 py-1"
-            onClick={() =>
-              setPage((p) =>
-                Math.min(Math.ceil(total / limit), p + 1)
-              )
-            }
-            disabled={page >= Math.ceil(total / limit)}
-          >
-            下一页
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 }
