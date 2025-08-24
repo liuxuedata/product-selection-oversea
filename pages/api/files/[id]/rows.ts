@@ -9,8 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
   const page = parseInt((req.query.page as string) ?? '1', 10);
   const limit = parseInt((req.query.limit as string) ?? '50', 10);
-  const from = (page - 1) * limit;
-  const to = from + limit - 1;
+  let from = (page - 1) * limit;
+  let to = from + limit - 1;
   const {
     platformMin,
     platformMax,
@@ -35,13 +35,45 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (keyword) query = query.ilike('title', `%${keyword}%`);
   if (category) query = query.eq('category', category);
 
+  // Recommendation list caps at 500 newest rows with score >=55
+  const minScore = platformMin ? Number(platformMin) : null;
+  if (minScore !== null && minScore >= 55) {
+    if (from > 499) {
+      await logInfo('rows fetched beyond cap', { fileId: id });
+      return res.status(200).json({ rows: [], count: 0 });
+    }
+    to = Math.min(to, 499);
+  }
+
   const { data, error, count } = await query
     .order('imported_at', { ascending: false })
     .range(from, to);
 
   if (!error) {
-    await logInfo('rows fetched', { fileId: id, count });
-    return res.status(200).json({ rows: data, count });
+    const rows = data || [];
+
+    // auto score rows missing scores
+    const missing = rows.filter(
+      (r: any) => r.platform_score == null || r.independent_score == null
+    );
+    if (missing.length) {
+      const { computeScores } = await import('@/lib/scoring');
+      for (const r of missing) {
+        const scores = computeScores(r);
+        await supabase
+          .from('product_scores')
+          .upsert({ row_id: r.row_id, ...scores });
+        r.platform_score = scores.platform_score;
+        r.independent_score = scores.independent_score;
+      }
+    }
+
+    const total =
+      minScore !== null && minScore >= 55
+        ? Math.min(count ?? rows.length, 500)
+        : count;
+    await logInfo('rows fetched', { fileId: id, count: total });
+    return res.status(200).json({ rows, count: total });
   }
 
   await logError('query v_blackbox_rows_with_scores failed', error);
@@ -70,6 +102,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     platform_score: null,
     independent_score: null,
   }));
+
+  if (rows.length) {
+    const { computeScores } = await import('@/lib/scoring');
+    for (const r of rows) {
+      const scores = computeScores(r);
+      await supabase
+        .from('product_scores')
+        .upsert({ row_id: r.id, ...scores });
+      r.platform_score = scores.platform_score;
+      r.independent_score = scores.independent_score;
+    }
+  }
 
   await logInfo('rows fetched fallback', { fileId: id, count: cnt2 });
   return res.status(200).json({ rows, count: cnt2 });

@@ -40,7 +40,7 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [draft, setDraft] = useState({
     platformMin: '',
-    platformMax: '',
+    platformMax: '54',
     independentMin: '',
     independentMax: '',
     keyword: '',
@@ -375,11 +375,19 @@ export default function ProductsPage() {
                 <td className="p-2 text-right">{p.height ?? '-'}</td>
                 <td className="p-2 text-right">{p.weight ?? '-'}</td>
                 <td className="p-2 text-right">{p.age_months ?? '-'}</td>
-                <td className="p-2">
-                  <ScoreBadge value={p.platform_score ?? 0} />
+                <td className="p-2 text-right">
+                  {p.platform_score != null ? (
+                    <ScoreBadge value={p.platform_score} />
+                  ) : (
+                    '-'
+                  )}
                 </td>
-                <td className="p-2">
-                  <ScoreBadge value={p.independent_score ?? 0} />
+                <td className="p-2 text-right">
+                  {p.independent_score != null ? (
+                    <ScoreBadge value={p.independent_score} />
+                  ) : (
+                    '-'
+                  )}
                 </td>
                 <td className="p-2 text-right">
                   {p.imported_at
