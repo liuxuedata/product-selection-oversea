@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .eq('row_id', id)
     .single();
   if (data) return res.status(200).json({ row: data });
-  const fallback = (mockProducts.items || []).find((r: any) => r.id === id);
+  const fallback = (mockProducts.items as any[]).find((r) => r.id === id);
   if (fallback) {
     return res.status(200).json({
       row: {
