@@ -160,10 +160,16 @@ async function processRows(fileId: string, rows: any[]) {
     }
   }
 
-  await supabase
+  const { error: updErr } = await supabase
     .from('blackbox_files')
     .update({ inserted_count: inserted, skipped_count: skipped, invalid_count: invalid })
     .eq('id', fileId);
+  if (updErr) {
+    await supabase
+      .from('blackbox_files')
+      .update({ inserted_count: inserted })
+      .eq('id', fileId);
+  }
 
   return { inserted, skipped, invalid, tasks };
 }

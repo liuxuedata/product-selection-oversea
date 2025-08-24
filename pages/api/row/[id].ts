@@ -30,7 +30,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .single();
   if (raw) {
     await logInfo('row fetched from blackbox_rows', { id });
-    return res.status(200).json({ row: { ...raw, platform_score: null, independent_score: null } });
+    return res.status(200).json({
+      row: {
+        ...raw,
+        imported_at: raw.imported_at ?? raw.inserted_at ?? raw.created_at ?? null,
+        platform_score: null,
+        independent_score: null,
+      },
+    });
   }
 
   const fallback = (mockProducts.items as any[]).find((r) => r.id === id);

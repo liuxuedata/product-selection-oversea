@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (category) query = query.eq('category', category);
 
   const { data, error, count } = await query
-    .order('row_index', { ascending: true })
+    .order('imported_at', { ascending: false })
     .range(from, to);
 
   if (!error) {
@@ -56,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (category) alt = alt.eq('category', category);
 
   const { data: raw, error: err2, count: cnt2 } = await alt
-    .order('row_index', { ascending: true })
+    .order('imported_at', { ascending: false })
     .range(from, to);
 
   if (err2) {
@@ -66,6 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const rows = (raw || []).map((r: any) => ({
     ...r,
+    imported_at: r.imported_at ?? r.inserted_at ?? r.created_at ?? null,
     platform_score: null,
     independent_score: null,
   }));

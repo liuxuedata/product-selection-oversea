@@ -44,7 +44,7 @@ SELECT
   r.id AS row_id,
   r.file_id,
   r.row_index,
-  r.created_at,
+  COALESCE(r.imported_at, r.inserted_at, r.created_at) AS imported_at,
   r.asin,
   r.url,
   r.title,

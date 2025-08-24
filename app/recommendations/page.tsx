@@ -68,7 +68,10 @@ export default function RecommendationsPage() {
       try {
         const files = await fetch('/api/files').then((r) => r.json());
         if (Array.isArray(files) && files.length) {
-          const latest = files[0];
+          const latest = files.find((f: any) =>
+            (f.inserted_count ?? f.row_count ?? 0) > 0
+          );
+          if (!latest) throw new Error('no file with rows');
           const params = new URLSearchParams({
             page: String(page),
             limit: String(limit),

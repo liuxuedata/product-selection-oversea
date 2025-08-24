@@ -113,7 +113,7 @@ export async function processRows(fileId: string, rows: any[]) {
     inserted++;
   }
 
-  await supabase
+  const { error: updErr } = await supabase
     .from('blackbox_files')
     .update({
       inserted_count: inserted,
@@ -121,6 +121,13 @@ export async function processRows(fileId: string, rows: any[]) {
       invalid_count: invalid,
     })
     .eq('id', fileId);
+  if (updErr) {
+    console.error('update file counts failed', updErr);
+    await supabase
+      .from('blackbox_files')
+      .update({ inserted_count: inserted })
+      .eq('id', fileId);
+  }
 
   return { inserted, skipped, invalid };
 }
