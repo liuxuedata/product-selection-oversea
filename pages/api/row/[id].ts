@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/lib/supabase';
 import mockProducts from '@/app/api/mock/products.json';
+import { logError, logInfo } from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
@@ -14,9 +15,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .eq('row_id', id)
     .single();
 
-  if (data) return res.status(200).json({ row: data });
+  if (data) {
+    await logInfo('row fetched', { id });
+    return res.status(200).json({ row: data });
+  }
 
-  console.error('query v_blackbox_rows_with_scores failed', error?.message);
+  await logError('query v_blackbox_rows_with_scores failed', error);
 
   // Fallback to raw table if the view is unavailable
   const { data: raw, error: err2 } = await supabase
@@ -24,11 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .select('*')
     .eq('id', id)
     .single();
-  if (raw)
+  if (raw) {
+    await logInfo('row fetched from blackbox_rows', { id });
     return res.status(200).json({ row: { ...raw, platform_score: null, independent_score: null } });
+  }
 
   const fallback = (mockProducts.items as any[]).find((r) => r.id === id);
   if (fallback) {
+    await logInfo('row fetched from mock data', { id });
     return res.status(200).json({
       row: {
         row_id: fallback.id,
@@ -58,7 +65,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  if (err2) return res.status(500).json({ error: err2.message });
-  if (error) return res.status(500).json({ error: error.message });
+  if (err2) {
+    await logError('query blackbox_rows failed', err2);
+    return res.status(500).json({ error: err2.message });
+  }
+  if (error) {
+    await logError('query v_blackbox_rows_with_scores error', error);
+    return res.status(500).json({ error: error.message });
+  }
+  await logError('row not found', { id });
   return res.status(404).json({ error: 'Not Found' });
 }

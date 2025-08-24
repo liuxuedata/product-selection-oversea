@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '@/lib/supabase';
+import { logError, logInfo } from '@/lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET')
@@ -39,10 +40,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .range(from, to);
 
   if (!error) {
+    await logInfo('rows fetched', { fileId: id, count });
     return res.status(200).json({ rows: data, count });
   }
 
-  console.error('query v_blackbox_rows_with_scores failed', error.message);
+  await logError('query v_blackbox_rows_with_scores failed', error);
 
   // Fallback: directly read from blackbox_rows without score columns.
   let alt = supabase
@@ -57,7 +59,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .order('row_index', { ascending: true })
     .range(from, to);
 
-  if (err2) return res.status(500).json({ error: err2.message });
+  if (err2) {
+    await logError('query blackbox_rows failed', err2);
+    return res.status(500).json({ error: err2.message });
+  }
 
   const rows = (raw || []).map((r: any) => ({
     ...r,
@@ -65,5 +70,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     independent_score: null,
   }));
 
+  await logInfo('rows fetched fallback', { fileId: id, count: cnt2 });
   return res.status(200).json({ rows, count: cnt2 });
 }

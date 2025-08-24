@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
 import mockProducts from "@/app/api/mock/products.json";
+import { logError, logInfo } from "@/lib/logger";
 
 type Product = {
   id: string;
@@ -49,13 +50,14 @@ export default function RecommendationsPage() {
           return;
         }
       } catch (err) {
-        console.error('fetch categories failed', err);
+        await logError('fetch categories failed', err);
       }
       const unique = Array.from(
         new Set(
           (mockProducts.items || []).map((p: any) => p.category).filter(Boolean)
         )
       );
+      await logInfo('using mock categories', { count: unique.length });
       setCategories(unique);
     }
     loadCategories();
@@ -109,7 +111,7 @@ export default function RecommendationsPage() {
           return;
         }
       } catch (err) {
-        console.error('fetch rows failed', err);
+        await logError('fetch rows failed', err);
       }
       const all: Product[] = (mockProducts.items || [])
         .filter((r: any) => (r.platform_score ?? r.score ?? 0) >= 55)
@@ -144,7 +146,9 @@ export default function RecommendationsPage() {
         return true;
       });
       const start = (page - 1) * limit;
-      setItems(filtered.slice(start, start + limit));
+      const slice = filtered.slice(start, start + limit);
+      await logInfo('using mock rows data', { count: slice.length });
+      setItems(slice);
       setTotal(filtered.length);
     }
     load();
