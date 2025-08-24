@@ -19,18 +19,45 @@ export default async function handler(
   } = req.query;
 
   let query = supabase
-    .from('v_blackbox_rows_with_scores')
+    .from('blackbox_rows')
     .select(
-      'row_id,url,image_url,asin,title,brand,shipping,category,price,review_count,review_rating,third_party_seller,seller_country,active_seller_count,size_tier,length,width,height,weight,age_months,platform_score,independent_score,imported_at'
+      `
+        id,
+        url,
+        image_url,
+        asin,
+        title,
+        brand,
+        shipping,
+        category,
+        price,
+        review_count,
+        review_rating,
+        third_party_seller,
+        seller_country,
+        active_seller_count,
+        size_tier,
+        length,
+        width,
+        height,
+        weight,
+        age_months,
+        imported_at,
+        product_scores!inner(platform_score,independent_score)
+      `
     );
 
-  if (platformMin) query = query.gte('platform_score', Number(platformMin));
-  if (platformMax) query = query.lte('platform_score', Number(platformMax));
-  if (independentMin) query = query.gte('independent_score', Number(independentMin));
-  if (independentMax) query = query.lte('independent_score', Number(independentMax));
+  if (platformMin)
+    query = query.gte('product_scores.platform_score', Number(platformMin));
+  if (platformMax)
+    query = query.lte('product_scores.platform_score', Number(platformMax));
+  if (independentMin)
+    query = query.gte('product_scores.independent_score', Number(independentMin));
+  if (independentMax)
+    query = query.lte('product_scores.independent_score', Number(independentMax));
   if (keyword) query = query.ilike('title', `%${keyword}%`);
   if (category) query = query.eq('category', category as string);
-  if (recommend) query = query.gte('platform_score', 55);
+  if (recommend) query = query.gte('product_scores.platform_score', 55);
 
   const { data, error } = await query
     .order('imported_at', { ascending: false })
@@ -38,5 +65,16 @@ export default async function handler(
 
   if (error) return res.status(500).json({ error: error.message });
 
-  return res.status(200).json({ rows: data });
+  const rows =
+    data?.map((r: any) => {
+      const { id, product_scores, ...rest } = r;
+      return {
+        row_id: id,
+        ...rest,
+        platform_score: product_scores?.platform_score ?? null,
+        independent_score: product_scores?.independent_score ?? null,
+      };
+    }) ?? [];
+
+  return res.status(200).json({ rows });
 }
