@@ -15,7 +15,11 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
       try {
         const info = await fetch(`/api/upload/tasks/${id}`).then(r => r.json());
         setProgress(info.progress ?? 0);
-        setStatus(info.status);
+        setStatus(
+          info.status === 'processing'
+            ? '产品导入中，敬请等待...'
+            : info.status
+        );
         if (info.status === 'done') {
           clearInterval(timer.current!);
           localStorage.removeItem('uploadTaskId');
@@ -58,7 +62,9 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
         const p = Math.round((e.loaded / e.total) * 100);
         setProgress(p);
         if (p === 100) {
-          setStatus('加载中...');
+          setStatus('产品导入中，敬请等待...');
+        } else {
+          setStatus('上传中...');
         }
       }
     };
@@ -119,7 +125,7 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
         </select>
       </div>
 
-      {progress > 0 ? (
+      {progress > 0 || status.startsWith('产品导入中') ? (
         <div>
           <div className="w-full bg-gray-200 h-2">
             <div

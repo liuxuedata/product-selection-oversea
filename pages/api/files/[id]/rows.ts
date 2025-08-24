@@ -38,6 +38,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Recommendation list caps at 500 newest rows with score >=55
   const minScore = platformMin ? Number(platformMin) : null;
   if (minScore !== null && minScore >= 55) {
+    const { data: recs, error: recErr, count: recCount } = await supabase
+      .from('recommendation_rows')
+      .select('platform_score, independent_score, imported_at, blackbox_rows(*)', {
+        count: 'exact',
+      })
+      .eq('file_id', id)
+      .order('imported_at', { ascending: false })
+      .range(from, Math.min(to, 499));
+    if (!recErr) {
+      const rows = (recs || []).map((r: any) => ({
+        ...r.blackbox_rows,
+        imported_at: r.imported_at,
+        platform_score: r.platform_score,
+        independent_score: r.independent_score,
+      }));
+      await logInfo('recommendations fetched', { fileId: id, count: rows.length });
+      return res.status(200).json({
+        rows,
+        count: Math.min(recCount ?? rows.length, 500),
+      });
+    }
+    await logError('query recommendation_rows failed', recErr);
     if (from > 499) {
       await logInfo('rows fetched beyond cap', { fileId: id });
       return res.status(200).json({ rows: [], count: 0 });

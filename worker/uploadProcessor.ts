@@ -107,7 +107,7 @@ export async function processRows(
     const { data: insertedRow, error: insErr } = await supabase
       .from('blackbox_rows')
       .insert(payload)
-      .select('id')
+      .select('id, imported_at')
       .single();
     if (insErr) {
       if ((insErr as any).code === '23505') { skipped++; continue; }
@@ -115,7 +115,20 @@ export async function processRows(
     }
 
     const scores = computeScores(payload);
-    await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
+    await supabase
+      .from('product_scores')
+      .upsert({ row_id: insertedRow.id, ...scores });
+
+    if (scores.platform_score >= 55) {
+      await supabase.from('recommendation_rows').upsert({
+        row_id: insertedRow.id,
+        file_id: fileId,
+        imported_at: insertedRow.imported_at,
+        platform_score: scores.platform_score,
+        independent_score: scores.independent_score,
+      });
+    }
+
     inserted++;
 
     const progress = Math.round(((i + 1) / rows.length) * 100);
@@ -139,6 +152,19 @@ export async function processRows(
       .from('blackbox_files')
       .update({ inserted_count: inserted })
       .eq('id', fileId);
+  }
+
+  const { data: extras } = await supabase
+    .from('recommendation_rows')
+    .select('row_id')
+    .eq('file_id', fileId)
+    .order('imported_at', { ascending: false })
+    .range(500, 10000);
+  if (extras && extras.length) {
+    await supabase
+      .from('recommendation_rows')
+      .delete()
+      .in('row_id', extras.map((r: any) => r.row_id));
   }
 
   return { inserted, skipped, invalid };
