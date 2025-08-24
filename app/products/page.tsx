@@ -46,6 +46,7 @@ export default function ProductsPage() {
     category: '',
   });
   const [filters, setFilters] = useState(draft);
+  const [status, setStatus] = useState<'loading' | 'loaded'>('loading');
 
   useEffect(() => {
     async function loadCategories() {
@@ -63,6 +64,7 @@ export default function ProductsPage() {
   useEffect(() => {
     async function load() {
       try {
+        setStatus('loading');
         const res = await fetch('/api/products/latest').then((r) => r.json());
         const rows = res.items || [];
         const mapped: Product[] = rows.map((r: any) => ({
@@ -103,6 +105,8 @@ export default function ProductsPage() {
         }
       } catch (err) {
         console.error('fetch latest failed', err);
+      } finally {
+        setStatus('loaded');
       }
     }
     load();
@@ -167,6 +171,9 @@ export default function ProductsPage() {
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">产品列表</h1>
+      <div className="text-sm text-gray-500">
+        {status === 'loading' ? '加载中，请等待...' : '加载完成'}
+      </div>
       <div className="flex flex-wrap items-end gap-2">
         <div>
           <label className="block text-xs">平台评分</label>
@@ -347,7 +354,14 @@ export default function ProductsPage() {
                 </td>
               </tr>
             ))}
-            {!display.length && (
+            {status === 'loading' && (
+              <tr>
+                <td className="p-2 text-center" colSpan={20}>
+                  加载中，请等待...
+                </td>
+              </tr>
+            )}
+            {status === 'loaded' && !display.length && (
               <tr>
                 <td className="p-2 text-center" colSpan={20}>
                   暂无数据

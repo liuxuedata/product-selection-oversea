@@ -39,6 +39,7 @@ export default function RecommendationsPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [draft, setDraft] = useState({ keyword: '', category: '' });
   const [filters, setFilters] = useState(draft);
+  const [status, setStatus] = useState<'loading' | 'loaded'>('loading');
 
   useEffect(() => {
     async function loadCategories() {
@@ -57,6 +58,7 @@ export default function RecommendationsPage() {
   useEffect(() => {
     async function load() {
       try {
+        setStatus('loading');
         const res = await fetch('/api/products/latest?recommend=1').then((r) => r.json());
         const rows = res.items || [];
         const mapped: Product[] = rows.map((r: any) => ({
@@ -97,6 +99,8 @@ export default function RecommendationsPage() {
         }
       } catch (err) {
         console.error('fetch latest failed', err);
+      } finally {
+        setStatus('loaded');
       }
     }
     load();
@@ -157,6 +161,9 @@ export default function RecommendationsPage() {
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">推荐产品</h1>
+      <div className="text-sm text-gray-500">
+        {status === 'loading' ? '加载中，请等待...' : '加载完成'}
+      </div>
       <div className="flex flex-wrap items-end gap-2">
         <div>
           <label className="block text-xs">产品名</label>
@@ -296,6 +303,20 @@ export default function RecommendationsPage() {
               <td className="p-2">{p.imported_at ?? '-'}</td>
             </tr>
           ))}
+          {status === 'loading' && (
+            <tr>
+              <td className="p-2 text-center" colSpan={20}>
+                加载中，请等待...
+              </td>
+            </tr>
+          )}
+          {status === 'loaded' && !display.length && (
+            <tr>
+              <td className="p-2 text-center" colSpan={20}>
+                暂无数据
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
