@@ -36,7 +36,7 @@ export default function RecommendationsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
-  const [draft, setDraft] = useState({ keyword: '', category: '' });
+  const [draft, setDraft] = useState({ keyword: '', category: '', tier: '' });
   const [filters, setFilters] = useState(draft);
 
   useEffect(() => {
@@ -49,18 +49,14 @@ export default function RecommendationsPage() {
 
   useEffect(() => {
     async function load() {
-      const files = await fetch('/api/files').then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
-      const latest = files[0];
       const params = new URLSearchParams({
         page: String(page),
         limit: String(limit),
-        platformMin: '55',
       });
       Object.entries(filters).forEach(([k, v]) => {
         if (v) params.set(k, v);
       });
-      const res = await fetch(`/api/files/${latest.id}/rows?${params.toString()}`).then((r) => r.json());
+      const res = await fetch(`/api/recommendations?${params.toString()}`).then((r) => r.json());
       const rows = res.rows || [];
       const mapped: Product[] = rows.map((r: any) => ({
         id: r.row_id,
@@ -85,7 +81,7 @@ export default function RecommendationsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
-        imported_at: r.imported_at ?? null,
+        imported_at: r.scored_at ?? r.created_at ?? null,
       }));
       setItems(mapped);
       setTotal(res.count || 0);
@@ -147,26 +143,39 @@ export default function RecommendationsPage() {
             onChange={(e) => setDraft({ ...draft, keyword: e.target.value })}
           />
         </div>
-        <div>
-          <label className="block text-xs">类目</label>
-          <select
-            className="border px-1"
-            value={draft.category}
-            onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-          >
-            <option value="">全部</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          className="border px-3 py-1"
-          onClick={() => {
-            setPage(1);
-            setFilters(draft);
+      <div>
+        <label className="block text-xs">类目</label>
+        <select
+          className="border px-1"
+          value={draft.category}
+          onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+        >
+          <option value="">全部</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs">评分段</label>
+        <select
+          className="border px-1"
+          value={draft.tier}
+          onChange={(e) => setDraft({ ...draft, tier: e.target.value })}
+        >
+          <option value="">全部</option>
+          <option value="excellent">优秀 (85-100)</option>
+          <option value="potential">潜力 (70-85)</option>
+          <option value="average">普通 (55-70)</option>
+        </select>
+      </div>
+      <button
+        className="border px-3 py-1"
+        onClick={() => {
+          setPage(1);
+          setFilters(draft);
           }}
         >
           搜索
