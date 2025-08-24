@@ -4,7 +4,7 @@ import type { File as FormidableFile, Files as FormidableFiles, Fields } from 'f
 import fs from 'fs';
 import { supabase } from '@/lib/supabase';
 import { parseExcelToRows } from '@/utils/parseExcel';
-import { computeScores, DEFAULT_WEIGHTS } from '@/lib/scoring';
+import { computeScores } from '@/lib/scoring';
 
 // 关闭 Next 自带 bodyParser，交给 formidable
 export const config = { api: { bodyParser: false } };
@@ -73,22 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     console.log('file meta inserted', fileRow.id);
 
-    // 4) 加载评分权重配置
-    const { data: weightRows } = await supabase
-      .from('score_weights')
-      .select('*');
-    const weights = JSON.parse(JSON.stringify(DEFAULT_WEIGHTS));
-    (weightRows || []).forEach((w: any) => {
-      const key = w.metric as keyof typeof DEFAULT_WEIGHTS;
-      if (weights[key]) {
-        weights[key].platform =
-          w.platform_weight ?? weights[key].platform;
-        weights[key].independent =
-          w.independent_weight ?? weights[key].independent;
-      }
-    });
-
-    // 5) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
+    // 4) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
     let inserted = 0, skipped = 0, invalid = 0;
 
     for (let i = 0; i < rows.length; i++) {
@@ -180,12 +165,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         throw insErr; // 其他错误直接抛
       }
 
-      const scores = computeScores(payload, weights);
+      const scores = computeScores(payload);
       await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
       inserted++;
     }
 
-    // 6) 将统计写回文件记录（忽略错误）
+    // 5) 将统计写回文件记录（忽略错误）
     await supabase
       .from('blackbox_files')
       .update({
@@ -196,7 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('id', fileRow.id);
     console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
 
-    // 7) 返回
+    // 6) 返回
     return res.status(200).json({
       fileId: fileRow.id,
       stats: { inserted, skipped, invalid, total: rows.length },

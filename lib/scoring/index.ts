@@ -4,48 +4,7 @@ function clamp(n: number, min = 0, max = 100) {
   return Math.max(min, Math.min(max, n));
 }
 
-export interface ScoreWeights {
-  price: { platform: number; independent: number };
-  priceTrend: { platform: number; independent: number };
-  asinSales: { platform: number; independent: number };
-  salesTrend: { platform: number; independent: number };
-  parentIncome: { platform: number; independent: number };
-  asinIncome: { platform: number; independent: number };
-  review: { platform: number; independent: number };
-  seller: { platform: number; independent: number };
-  lastYearSales: { platform: number; independent: number };
-  yoy: { platform: number; independent: number };
-  size: { platform: number; independent: number };
-  weight: { platform: number; independent: number };
-  storage: { platform: number; independent: number };
-  age: { platform: number; independent: number };
-  img: { platform: number; independent: number };
-  variant: { platform: number; independent: number };
-}
-
-export const DEFAULT_WEIGHTS: ScoreWeights = {
-  price: { platform: 0.02, independent: 0.08 },
-  priceTrend: { platform: 0.02, independent: 0.05 },
-  asinSales: { platform: 0.11, independent: 0.06 },
-  salesTrend: { platform: 0.09, independent: 0.06 },
-  parentIncome: { platform: 0.07, independent: 0.06 },
-  asinIncome: { platform: 0.07, independent: 0.06 },
-  review: { platform: 0.16, independent: 0.12 },
-  seller: { platform: 0.07, independent: 0.08 },
-  lastYearSales: { platform: 0.07, independent: 0.05 },
-  yoy: { platform: 0.07, independent: 0.05 },
-  size: { platform: 0.03, independent: 0.05 },
-  weight: { platform: 0.03, independent: 0.04 },
-  storage: { platform: 0.03, independent: 0.04 },
-  age: { platform: 0.06, independent: 0.09 },
-  img: { platform: 0.02, independent: 0.03 },
-  variant: { platform: 0.02, independent: 0.02 },
-};
-
-export function computeScores(
-  row: Record<string, any>,
-  weights: ScoreWeights = DEFAULT_WEIGHTS
-) {
+export function computeScores(row: Record<string, any>) {
   // --- base fields ---
   const price = pickNumber(row, ['price', '价格', '售价']);
   const priceTrend = pickNumber(row, ['price_trend_90d', '价格趋势（90 天） (%)', '价格趋势（90天） (%)', 'Price Trend (90d) (%)']);
@@ -137,43 +96,43 @@ export function computeScores(
   const variantScore = variantCount >= 2 ? 100 : variantCount * 50;
 
   const totalScore =
-    priceScorePlatform * weights.price.platform +
-    priceTrendScore * weights.priceTrend.platform +
-    asinSalesScore * weights.asinSales.platform +
-    salesTrendScore * weights.salesTrend.platform +
-    parentIncomeScore * weights.parentIncome.platform +
-    asinIncomeScore * weights.asinIncome.platform +
-    reviewFinalScore * weights.review.platform +
-    sellerScore * weights.seller.platform +
-    lastYearSalesScore * weights.lastYearSales.platform +
-    yoyScore * weights.yoy.platform +
-    sizeScore * weights.size.platform +
-    weightScore * weights.weight.platform +
-    storageScore * weights.storage.platform +
-    ageScore * weights.age.platform +
-    imgScore * weights.img.platform +
-    variantScore * weights.variant.platform;
+    priceScorePlatform * 0.02 +
+    priceTrendScore * 0.02 +
+    asinSalesScore * 0.11 +
+    salesTrendScore * 0.09 +
+    parentIncomeScore * 0.07 +
+    asinIncomeScore * 0.07 +
+    reviewFinalScore * 0.16 +
+    sellerScore * 0.07 +
+    lastYearSalesScore * 0.07 +
+    yoyScore * 0.07 +
+    sizeScore * 0.03 +
+    weightScore * 0.03 +
+    storageScore * 0.03 +
+    ageScore * 0.06 +
+    imgScore * 0.02 +
+    variantScore * 0.02;
 
   const platform_score = clamp(totalScore);
 
   // --- independent site total ---
   const independentTotal =
-    priceScoreIndependent * weights.price.independent +
-    priceTrendScore * weights.priceTrend.independent +
-    asinSalesScore * weights.asinSales.independent +
-    salesTrendScore * weights.salesTrend.independent +
-    parentIncomeScore * weights.parentIncome.independent +
-    asinIncomeScore * weights.asinIncome.independent +
-    reviewFinalScore * weights.review.independent +
-    sellerScore * weights.seller.independent +
-    lastYearSalesScore * weights.lastYearSales.independent +
-    yoyScore * weights.yoy.independent +
-    sizeScore * weights.size.independent +
-    weightScore * weights.weight.independent +
-    storageScore * weights.storage.independent +
-    ageScore * weights.age.independent +
-    imgScore * weights.img.independent +
-    variantScore * weights.variant.independent;
+    priceScoreIndependent * 0.08 +
+    priceTrendScore * 0.05 +
+    asinSalesScore * 0.06 +
+    salesTrendScore * 0.06 +
+    parentIncomeScore * 0.06 +
+    asinIncomeScore * 0.06 +
+    reviewFinalScore * 0.12 +
+    sellerScore * 0.08 +
+    lastYearSalesScore * 0.05 +
+    yoyScore * 0.05 +
+    sizeScore * 0.05 +
+    weightScore * 0.04 +
+    storageScore * 0.04 +
+    ageScore * 0.09 +
+    imgScore * 0.03 +
+    variantScore * 0.02;
 
   const independent_score = clamp(independentTotal);
 
