@@ -15,6 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     independentMax,
     keyword,
     category,
+    startDate,
   } = req.query;
 
   let query = supabase
@@ -30,6 +31,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     query = query.lte('independent_score', Number(independentMax));
   if (keyword) query = query.ilike('title', `%${keyword}%`);
   if (category) query = query.eq('category', category);
+  if (startDate) {
+    const iso = new Date(String(startDate)).toISOString();
+    query = query.gte('import_at', iso);
+  }
 
   const { data, error, count } = await query
     .order('row_index', { ascending: true })
