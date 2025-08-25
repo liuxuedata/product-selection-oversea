@@ -37,6 +37,7 @@ export default function ProductsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState({
     platformMin: '',
     platformMax: '',
@@ -56,8 +57,12 @@ export default function ProductsPage() {
   }, []);
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const files = await fetch('/api/files').then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
+      if (!Array.isArray(files) || !files.length) {
+        setLoading(false);
+        return;
+      }
       let collected: Product[] = [];
       for (const file of files) {
         if (collected.length >= FETCH_LIMIT) break;
@@ -104,6 +109,7 @@ export default function ProductsPage() {
       }
       setItems(collected);
       setTotal(collected.length);
+      setLoading(false);
     }
     load();
   }, [filters]);
@@ -153,6 +159,12 @@ export default function ProductsPage() {
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">产品列表</h1>
+      {loading && (
+        <div className="w-full">
+          <progress className="w-full h-1" />
+          <p className="text-xs text-center">数据加载中...</p>
+        </div>
+      )}
       <div className="flex flex-wrap items-end gap-2">
         <div>
           <label className="block text-xs">平台评分</label>

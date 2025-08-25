@@ -32,6 +32,7 @@ type Filters = {
   keyword: string;
   category: string;
   startDate: string;
+  seller: string;
 };
 
 export default function RecommendationsPage() {
@@ -43,10 +44,13 @@ export default function RecommendationsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+  const [sellers, setSellers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const [draft, setDraft] = useState<Filters>({
     keyword: '',
     category: '',
     startDate: '',
+    seller: '',
   });
   const [filters, setFilters] = useState<Filters>({ ...draft });
 
@@ -56,12 +60,21 @@ export default function RecommendationsPage() {
       setCategories(res.categories || []);
     }
     loadCategories();
+    async function loadSellers() {
+      const res = await fetch('/api/sellers').then((r) => r.json());
+      setSellers(res.sellers || []);
+    }
+    loadSellers();
   }, []);
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const files = await fetch('/api/files').then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
+      if (!Array.isArray(files) || !files.length) {
+        setLoading(false);
+        return;
+      }
       const collected: Product[] = [];
       const seen = new Set<string>();
       for (const file of files) {
@@ -72,7 +85,9 @@ export default function RecommendationsPage() {
           platformMin: '55',
         });
         Object.entries(filters).forEach(([k, v]) => {
-          if (v) params.set(k, v);
+          if (!v) return;
+          if (k === 'seller') params.set('thirdPartySeller', v);
+          else params.set(k, v);
         });
         const res = await fetch(`/api/files/${file.id}/rows?${params.toString()}`).then((r) => r.json());
         const rows = res.rows || [];
@@ -112,6 +127,7 @@ export default function RecommendationsPage() {
       }
       setItems(collected);
       setTotal(collected.length);
+      setLoading(false);
     }
     load();
   }, [filters]);
@@ -161,6 +177,12 @@ export default function RecommendationsPage() {
   return (
     <div className="p-6 space-y-4 overflow-auto">
       <h1 className="text-2xl font-semibold">推荐产品</h1>
+      {loading && (
+        <div className="w-full">
+          <progress className="w-full h-1" />
+          <p className="text-xs text-center">数据加载中...</p>
+        </div>
+      )}
       <div className="flex flex-wrap items-end gap-2">
         <div>
           <label className="block text-xs">产品名</label>
@@ -182,6 +204,21 @@ export default function RecommendationsPage() {
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs">第三方卖家</label>
+          <select
+            className="border px-1"
+            value={draft.seller}
+            onChange={(e) => setDraft({ ...draft, seller: e.target.value })}
+          >
+            <option value="">全部</option>
+            {sellers.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </select>
