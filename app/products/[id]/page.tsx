@@ -51,8 +51,8 @@ export default async function ProductDetail({ params }: { params: { id: string }
               录入时间：
               {p.import_at
                 ? new Date(p.import_at).toLocaleDateString()
-                : p.created_at
-                ? new Date(p.created_at).toLocaleDateString()
+                : p.insert_at
+                ? new Date(p.insert_at).toLocaleDateString()
                 : '-'}
             </li>
           </ul>

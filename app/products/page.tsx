@@ -92,7 +92,7 @@ export default function ProductsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
-        import_at: r.import_at ?? r.created_at ?? null,
+        import_at: r.import_at ?? r.insert_at ?? null,
       }));
       setItems(mapped);
       setTotal(res.count || 0);
