@@ -52,7 +52,8 @@ export default function RecommendationsPage() {
     async function load() {
       const files = await fetch('/api/files').then((r) => r.json());
       if (!Array.isArray(files) || !files.length) return;
-      let collected: Product[] = [];
+      const collected: Product[] = [];
+      const seen = new Set<string>();
       for (const file of files) {
         if (collected.length >= FETCH_LIMIT) break;
         const params = new URLSearchParams({
@@ -90,10 +91,14 @@ export default function RecommendationsPage() {
           independent_score: r.independent_score ?? null,
           import_at: r.import_at ?? r.insert_at ?? null,
         }));
-        collected = collected.concat(mapped);
-      }
-      if (collected.length > FETCH_LIMIT) {
-        collected = collected.slice(0, FETCH_LIMIT);
+        for (const p of mapped) {
+          const key = p.asin || p.id;
+          if (key && !seen.has(key)) {
+            seen.add(key);
+            collected.push(p);
+            if (collected.length >= FETCH_LIMIT) break;
+          }
+        }
       }
       setItems(collected);
       setTotal(collected.length);
