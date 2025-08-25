@@ -73,12 +73,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     console.log('file meta inserted', fileRow.id);
 
-    // 4) 立即返回并在后台处理
-    res.status(200).json({ fileId: fileRow.id, status: 'processing' });
-
-    // 5) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
-    (async () => {
-      let inserted = 0, skipped = 0, invalid = 0;
+    // 4) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
+    let inserted = 0, skipped = 0, invalid = 0;
 
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
@@ -189,8 +185,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .update({ status: 'completed' })
       .eq('file_id', fileRow.id);
     console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
-    })().catch((e) => console.error('async upload failed', e));
-    return;
+
+    // 6) 返回结果
+    return res.status(200).json({
+      fileId: fileRow.id,
+      inserted,
+      skipped,
+      invalid,
+    });
 
   } catch (e: any) {
     return res.status(500).json({ error: e?.message || 'Upload failed' });
