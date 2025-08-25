@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import ImportTimeCell from "@/components/ImportTimeCell";
 
 type Product = {
   id: string;
@@ -288,9 +289,7 @@ export default function RecommendationsPage() {
                 )}
               </td>
               <td className="p-2">
-                {p.import_at
-                  ? new Date(p.import_at).toLocaleDateString()
-                  : '-'}
+                <ImportTimeCell import_at={p.import_at} />
               </td>
             </tr>
           ))}

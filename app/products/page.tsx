@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import ImportTimeCell from "@/components/ImportTimeCell";
 
 type Product = {
   id: string;
@@ -327,9 +328,7 @@ export default function ProductsPage() {
                   <ScoreBadge value={p.independent_score ?? 0} />
                 </td>
                 <td className="p-2 text-right">
-                  {p.import_at
-                    ? new Date(p.import_at).toLocaleDateString()
-                    : '-'}
+                  <ImportTimeCell import_at={p.import_at} />
                 </td>
               </tr>
             ))}
