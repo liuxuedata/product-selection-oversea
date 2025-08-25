@@ -26,5 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  return res.status(200).json({ rescored });
+  const { count: zeroItems, error: zeroErr } = await supabase
+    .from('product_scores')
+    .select('row_id', { count: 'exact', head: true })
+    .eq('platform_score', 0)
+    .eq('independent_score', 0);
+  if (zeroErr) return res.status(500).json({ error: zeroErr.message });
+
+  return res.status(200).json({ rescored, zeroItems });
 }

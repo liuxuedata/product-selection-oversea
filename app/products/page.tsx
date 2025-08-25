@@ -113,7 +113,7 @@ export default function ProductsPage() {
     try {
       const res = await fetch('/api/products/rescore', { method: 'POST' });
       const data = await res.json();
-      alert(`rescored: ${data.rescored}, zeroItems: ${data.zeroItems}`);
+      alert(`rescored: ${data.rescored}, zeroItems: ${data.zeroItems ?? 0}`);
       setFilters((f) => ({ ...f }));
     } catch (err) {
       console.error('rescore products failed', err);
