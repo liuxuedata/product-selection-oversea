@@ -28,8 +28,14 @@ type Product = {
   import_at: string | null;
 };
 
+type Filters = {
+  keyword: string;
+  category: string;
+  startDate: string;
+};
+
 export default function RecommendationsPage() {
-  const FETCH_LIMIT = 200;
+  const FETCH_LIMIT = 500;
   const [items, setItems] = useState<Product[]>([]);
   const [sortKey, setSortKey] = useState<keyof Product | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -37,8 +43,12 @@ export default function RecommendationsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
-  const [draft, setDraft] = useState({ keyword: '', category: '' });
-  const [filters, setFilters] = useState(draft);
+  const [draft, setDraft] = useState<Filters>({
+    keyword: '',
+    category: '',
+    startDate: '',
+  });
+  const [filters, setFilters] = useState<Filters>({ ...draft });
 
   useEffect(() => {
     async function loadCategories() {
@@ -89,7 +99,7 @@ export default function RecommendationsPage() {
           age_months: r.age_months ?? null,
           platform_score: r.platform_score ?? null,
           independent_score: r.independent_score ?? null,
-          import_at: r.import_at ?? r.insert_at ?? null,
+          import_at: r.import_at ?? r.created_at ?? null,
         }));
         for (const p of mapped) {
           const key = p.asin || p.id;
@@ -176,11 +186,22 @@ export default function RecommendationsPage() {
             ))}
           </select>
         </div>
+        <div>
+          <label className="block text-xs">开始日期</label>
+          <input
+            type="date"
+            className="border px-1"
+            value={draft.startDate}
+            onChange={(e) =>
+              setDraft({ ...draft, startDate: e.target.value })
+            }
+          />
+        </div>
         <button
           className="border px-3 py-1"
           onClick={() => {
             setPage(1);
-            setFilters(draft);
+            setFilters({ ...draft });
           }}
         >
           搜索
@@ -289,7 +310,7 @@ export default function RecommendationsPage() {
               </td>
               <td className="p-2">
                 {p.import_at
-                  ? new Date(p.import_at).toLocaleDateString()
+                  ? new Date(p.import_at).toLocaleString()
                   : '-'}
               </td>
             </tr>
