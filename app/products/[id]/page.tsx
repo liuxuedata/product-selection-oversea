@@ -47,6 +47,14 @@ export default async function ProductDetail({ params }: { params: { id: string }
             <li>品牌：{p.brand}</li>
             <li>价格：{p.price}</li>
             <li>评论：{p.review_count} / {p.review_rating}</li>
+            <li>
+              录入时间：
+              {p.import_at
+                ? new Date(p.import_at).toLocaleDateString()
+                : p.created_at
+                ? new Date(p.created_at).toLocaleDateString()
+                : '-'}
+            </li>
           </ul>
         </div>
         <div className="border border-[var(--border)] rounded p-4">

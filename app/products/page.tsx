@@ -25,7 +25,7 @@ type Product = {
   age_months: number | null;
   platform_score: number | null;
   independent_score: number | null;
-  imported_at: string | null;
+  import_at: string | null;
 };
 
 export default function ProductsPage() {
@@ -92,7 +92,7 @@ export default function ProductsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
-        imported_at: r.imported_at ?? null,
+        import_at: r.import_at ?? r.created_at ?? null,
       }));
       setItems(mapped);
       setTotal(res.count || 0);
@@ -247,7 +247,7 @@ export default function ProductsPage() {
               {renderHeader('年龄（月）', 'age_months', 'text-right')}
               {renderHeader('平台评分', 'platform_score')}
               {renderHeader('独立站评分', 'independent_score')}
-              {renderHeader('录入时间', 'imported_at')}
+              {renderHeader('录入时间', 'import_at')}
             </tr>
           </thead>
           <tbody>
@@ -318,8 +318,8 @@ export default function ProductsPage() {
                   <ScoreBadge value={p.independent_score ?? 0} />
                 </td>
                 <td className="p-2 text-right">
-                  {p.imported_at
-                    ? new Date(p.imported_at).toLocaleDateString()
+                  {p.import_at
+                    ? new Date(p.import_at).toLocaleDateString()
                     : '-'}
                 </td>
               </tr>

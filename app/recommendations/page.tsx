@@ -25,7 +25,7 @@ type Product = {
   age_months: number | null;
   platform_score: number | null;
   independent_score: number | null;
-  imported_at: string | null;
+  import_at: string | null;
 };
 
 export default function RecommendationsPage() {
@@ -85,7 +85,7 @@ export default function RecommendationsPage() {
         age_months: r.age_months ?? null,
         platform_score: r.platform_score ?? null,
         independent_score: r.independent_score ?? null,
-        imported_at: r.imported_at ?? null,
+        import_at: r.import_at ?? r.created_at ?? null,
       }));
       setItems(mapped);
       setTotal(res.count || 0);
@@ -195,7 +195,7 @@ export default function RecommendationsPage() {
             {renderHeader('年龄(月)', 'age_months', 'text-right')}
             {renderHeader('平台评分', 'platform_score', 'text-right')}
             {renderHeader('独立站评分', 'independent_score', 'text-right')}
-            {renderHeader('录入时间', 'imported_at')}
+            {renderHeader('录入时间', 'import_at')}
           </tr>
         </thead>
         <tbody>
@@ -273,7 +273,11 @@ export default function RecommendationsPage() {
                   '-'
                 )}
               </td>
-              <td className="p-2">{p.imported_at ?? '-'}</td>
+              <td className="p-2">
+                {p.import_at
+                  ? new Date(p.import_at).toLocaleDateString()
+                  : '-'}
+              </td>
             </tr>
           ))}
         </tbody>
