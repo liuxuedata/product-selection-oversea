@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) {
@@ -8,6 +8,35 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
   const [status, setStatus] = useState('');
   const [message, setMessage] = useState('');
   const router = useRouter();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, []);
+
+  const pollStatus = (id: string) => {
+    const poll = async () => {
+      try {
+        const resp = await fetch(`/api/files/${id}`);
+        const data = await resp.json();
+        if (data && data.inserted_count !== null && data.inserted_count !== undefined) {
+          setStatus('完成');
+          setMessage(`成功 ${data.inserted_count} 条`);
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          onUploaded?.();
+          router.push(`/recommendations`);
+        }
+      } catch (e) {
+        console.error('poll failed', e);
+      }
+    };
+    pollRef.current = setInterval(poll, 3000);
+  };
 
   const uploadFile = (file: File) => {
     const formData = new FormData();
@@ -34,10 +63,8 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
       try {
         const data = JSON.parse(xhr.responseText);
         if (xhr.status >= 200 && xhr.status < 300) {
-          setStatus('完成');
-          setMessage(`成功 ${data.stats.inserted} 条`);
-          onUploaded?.();
-          router.push(`/recommendations`);
+          setStatus('后台处理中...');
+          pollStatus(data.fileId);
         } else {
           setStatus('上传失败');
           setMessage(data.error || 'Upload failed');
