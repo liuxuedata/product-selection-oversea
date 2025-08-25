@@ -156,7 +156,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image_count: pickNumber(r, ['图片的数量', 'Image Count', '图片数量', 'Image Qty']),
         variant_count: pickNumber(r, ['变体数量', 'Variant Count', '变体数', 'Variant Qty']),
         sales_review_ratio: pickNumber(r, ['销量评论比', 'Sales/Review Ratio', '销量/评论比', 'Sales Review Ratio']),
-        data: r
+        data: r,
+        status: 'processing',
       };
 
       const { data: insertedRow, error: insErr } = await supabase
@@ -174,7 +175,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       inserted++;
     }
 
-    // 5) 将统计写回文件记录（忽略错误）
+    // 5) 将统计写回文件记录并标记行已完成（忽略错误）
     await supabase
       .from('blackbox_files')
       .update({
@@ -183,6 +184,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         invalid_count: invalid,
       })
       .eq('id', fileRow.id);
+    await supabase
+      .from('blackbox_rows')
+      .update({ status: 'completed' })
+      .eq('file_id', fileRow.id);
     console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
     })().catch((e) => console.error('async upload failed', e));
     return;

@@ -46,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const rows = (data || []).map((r) => ({
     ...r,
     import_at: r.import_at ?? r.created_at ?? null,
+    status: r.status || 'processing',
   }));
   return res.status(200).json({ rows, count });
 }

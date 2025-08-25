@@ -11,7 +11,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .single();
   if (error) return res.status(500).json({ error: error.message });
   const row = data
-    ? { ...data, import_at: data.import_at ?? data.created_at ?? null }
+    ? {
+        ...data,
+        import_at: data.import_at ?? data.created_at ?? null,
+        status: data.status || 'processing',
+      }
     : null;
   return res.status(200).json({ row });
 }

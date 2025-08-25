@@ -6,7 +6,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { data, error } = await supabase
     .from('blackbox_files')
     .select('id, filename, uploaded_at, row_count, inserted_count')
-    .not('inserted_count', 'is', null)
     .order('uploaded_at', { ascending: false });
   if (error) {
     console.error('fetch files failed', error.message);
