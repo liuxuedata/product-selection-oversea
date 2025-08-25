@@ -55,9 +55,6 @@ export default function RecommendationsPage() {
       if (!Array.isArray(files) || !files.length) return;
       const collected: Product[] = [];
       const seen = new Set<string>();
-      const startTime = filters.startDate
-        ? new Date(filters.startDate).setHours(0, 0, 0, 0)
-        : null;
       for (const file of files) {
         if (collected.length >= FETCH_LIMIT) break;
         const params = new URLSearchParams({
@@ -72,8 +69,7 @@ export default function RecommendationsPage() {
           `/api/files/${file.id}/rows?${params.toString()}`
         ).then((r) => r.json());
         const rows = res.rows || [];
-        const mapped: Product[] = rows
-          .map((r: any): Product => ({
+        const mapped: Product[] = rows.map((r: any): Product => ({
             id: r.row_id,
             url: r.url ?? null,
             image_url: r.image_url ?? null,
@@ -96,14 +92,8 @@ export default function RecommendationsPage() {
             age_months: r.age_months ?? null,
             platform_score: r.platform_score ?? null,
             independent_score: r.independent_score ?? null,
-            import_at: r.import_at ?? r.insert_at ?? null,
-          }))
-          .filter((p: Product) => {
-            if (!startTime) return true;
-            if (!p.import_at) return false;
-            const t = new Date(p.import_at).getTime();
-            return !isNaN(t) && t >= startTime;
-          });
+            import_at: r.import_at ?? r.created_at ?? null,
+          }));
         for (const p of mapped) {
           const key = p.asin || p.id;
           if (key && !seen.has(key)) {

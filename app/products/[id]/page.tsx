@@ -49,7 +49,7 @@ export default async function ProductDetail({ params }: { params: { id: string }
             <li>价格：{p.price}</li>
             <li>评论：{p.review_count} / {p.review_rating}</li>
             <li>
-              录入时间：<ImportTimeCell import_at={p.import_at} insert_at={p.insert_at} />
+              录入时间：<ImportTimeCell import_at={p.import_at} created_at={p.created_at} />
             </li>
           </ul>
         </div>

@@ -2,13 +2,13 @@ import React from "react";
 
 interface Props {
   import_at?: string | null;
-  insert_at?: string | null;
+  created_at?: string | null;
 }
 
-export default function ImportTimeCell({ import_at, insert_at }: Props) {
-  const value = import_at || insert_at;
+export default function ImportTimeCell({ import_at, created_at }: Props) {
+  const value = import_at || created_at;
   if (!value) return <span>-</span>;
   const date = new Date(value);
   if (isNaN(date.getTime())) return <span>-</span>;
-  return <span>{date.toLocaleDateString()}</span>;
+  return <span>{date.toLocaleString()}</span>;
 }

@@ -10,5 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .eq('row_id', id)
     .single();
   if (error) return res.status(500).json({ error: error.message });
-  return res.status(200).json({ row: data });
+  const row = data
+    ? { ...data, import_at: data.import_at ?? data.created_at ?? null }
+    : null;
+  return res.status(200).json({ row });
 }
