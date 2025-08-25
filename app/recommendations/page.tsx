@@ -29,6 +29,7 @@ type Product = {
 };
 
 export default function RecommendationsPage() {
+  const FETCH_LIMIT = 200;
   const [items, setItems] = useState<Product[]>([]);
   const [sortKey, setSortKey] = useState<keyof Product | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -51,47 +52,54 @@ export default function RecommendationsPage() {
     async function load() {
       const files = await fetch('/api/files').then((r) => r.json());
       if (!Array.isArray(files) || !files.length) return;
-      const latest = files[0];
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        platformMin: '55',
-      });
-      Object.entries(filters).forEach(([k, v]) => {
-        if (v) params.set(k, v);
-      });
-      const res = await fetch(`/api/files/${latest.id}/rows?${params.toString()}`).then((r) => r.json());
-      const rows = res.rows || [];
-      const mapped: Product[] = rows.map((r: any) => ({
-        id: r.row_id,
-        url: r.url ?? null,
-        image_url: r.image_url ?? null,
-        asin: r.asin ?? null,
-        title: r.title ?? null,
-        brand: r.brand ?? null,
-        shipping: r.shipping ?? null,
-        category: r.category ?? null,
-        price: r.price ?? null,
-        review_count: r.review_count ?? null,
-        review_rating: r.review_rating ?? null,
-        third_party_seller: r.third_party_seller ?? null,
-        seller_country: r.seller_country ?? null,
-        active_seller_count: r.active_seller_count ?? null,
-        size_tier: r.size_tier ?? null,
-        length: r.length ?? null,
-        width: r.width ?? null,
-        height: r.height ?? null,
-        weight: r.weight ?? null,
-        age_months: r.age_months ?? null,
-        platform_score: r.platform_score ?? null,
-        independent_score: r.independent_score ?? null,
-        import_at: r.import_at ?? r.insert_at ?? null,
-      }));
-      setItems(mapped);
-      setTotal(res.count || 0);
+      let collected: Product[] = [];
+      for (const file of files) {
+        if (collected.length >= FETCH_LIMIT) break;
+        const params = new URLSearchParams({
+          page: '1',
+          limit: String(FETCH_LIMIT - collected.length),
+          platformMin: '55',
+        });
+        Object.entries(filters).forEach(([k, v]) => {
+          if (v) params.set(k, v);
+        });
+        const res = await fetch(`/api/files/${file.id}/rows?${params.toString()}`).then((r) => r.json());
+        const rows = res.rows || [];
+        const mapped: Product[] = rows.map((r: any) => ({
+          id: r.row_id,
+          url: r.url ?? null,
+          image_url: r.image_url ?? null,
+          asin: r.asin ?? null,
+          title: r.title ?? null,
+          brand: r.brand ?? null,
+          shipping: r.shipping ?? null,
+          category: r.category ?? null,
+          price: r.price ?? null,
+          review_count: r.review_count ?? null,
+          review_rating: r.review_rating ?? null,
+          third_party_seller: r.third_party_seller ?? null,
+          seller_country: r.seller_country ?? null,
+          active_seller_count: r.active_seller_count ?? null,
+          size_tier: r.size_tier ?? null,
+          length: r.length ?? null,
+          width: r.width ?? null,
+          height: r.height ?? null,
+          weight: r.weight ?? null,
+          age_months: r.age_months ?? null,
+          platform_score: r.platform_score ?? null,
+          independent_score: r.independent_score ?? null,
+          import_at: r.import_at ?? r.insert_at ?? null,
+        }));
+        collected = collected.concat(mapped);
+      }
+      if (collected.length > FETCH_LIMIT) {
+        collected = collected.slice(0, FETCH_LIMIT);
+      }
+      setItems(collected);
+      setTotal(collected.length);
     }
     load();
-  }, [page, limit, filters]);
+  }, [filters]);
 
   function handleSort(key: keyof Product) {
     if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
@@ -101,9 +109,9 @@ export default function RecommendationsPage() {
     }
   }
 
-  const display = [...items];
+  const sorted = [...items];
   if (sortKey) {
-    display.sort((a, b) => {
+    sorted.sort((a, b) => {
       const va = a[sortKey];
       const vb = b[sortKey];
       if (va == null) return 1;
@@ -118,6 +126,7 @@ export default function RecommendationsPage() {
       return 0;
     });
   }
+  const display = sorted.slice((page - 1) * limit, page * limit);
 
   const renderHeader = (
     label: string,
