@@ -39,7 +39,12 @@ export default function RecommendationsPage() {
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
-  const [draft, setDraft] = useState({ keyword: '', category: '', startDate: '' });
+  const [draft, setDraft] = useState({
+    keyword: '',
+    category: '',
+    startDate: '',
+    thirdPartySeller: '',
+  });
   const [filters, setFilters] = useState(draft);
 
   useEffect(() => {
@@ -180,6 +185,18 @@ export default function RecommendationsPage() {
                 {c}
               </option>
             ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs">第三方卖家</label>
+          <select
+            className="border px-1"
+            value={draft.thirdPartySeller}
+            onChange={(e) => setDraft({ ...draft, thirdPartySeller: e.target.value })}
+          >
+            <option value="">全部</option>
+            <option value="Yes">是</option>
+            <option value="No">否</option>
           </select>
         </div>
         <div>

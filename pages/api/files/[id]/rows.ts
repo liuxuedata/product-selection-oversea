@@ -16,6 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     keyword,
     category,
     startDate,
+    thirdPartySeller,
   } = req.query;
 
   let query = supabase
@@ -31,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     query = query.lte('independent_score', Number(independentMax));
   if (keyword) query = query.ilike('title', `%${keyword}%`);
   if (category) query = query.eq('category', category);
+  if (thirdPartySeller) query = query.eq('third_party_seller', thirdPartySeller);
   if (startDate) {
     const d = new Date(startDate as string);
     if (!isNaN(d.getTime())) {
