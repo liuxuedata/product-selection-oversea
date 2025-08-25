@@ -109,6 +109,17 @@ export default function ProductsPage() {
     }
   }
 
+  async function handleRescore() {
+    try {
+      const res = await fetch('/api/products/rescore', { method: 'POST' });
+      const data = await res.json();
+      alert(`rescored: ${data.rescored}, zeroItems: ${data.zeroItems}`);
+      setFilters((f) => ({ ...f }));
+    } catch (err) {
+      console.error('rescore products failed', err);
+    }
+  }
+
   const display = [...items];
   if (sortKey) {
     display.sort((a, b) => {
@@ -144,7 +155,15 @@ export default function ProductsPage() {
 
   return (
     <div className="p-6 space-y-4 overflow-auto">
-      <h1 className="text-2xl font-semibold">产品列表</h1>
+      <div className="flex items-center">
+        <h1 className="text-2xl font-semibold">产品列表</h1>
+        <button
+          className="ml-auto px-3 py-1 border"
+          onClick={handleRescore}
+        >
+          重新评分
+        </button>
+      </div>
       <div className="flex flex-wrap items-end gap-2">
         <div>
           <label className="block text-xs">平台评分</label>
