@@ -33,12 +33,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (category) query = query.eq('category', category);
   if (startDate) {
     const iso = new Date(String(startDate)).toISOString();
-    query = query.gte('import_at', iso);
+    query = query.gte('created_at', iso);
   }
 
   const { data, error, count } = await query
     .order('row_index', { ascending: true })
     .range(from, to);
   if (error) return res.status(500).json({ error: error.message });
-  return res.status(200).json({ rows: data, count });
+  const rows = data?.map((r: any) => ({
+    ...r,
+    import_at: r.import_at ?? r.created_at ?? null,
+  }));
+  return res.status(200).json({ rows, count });
 }

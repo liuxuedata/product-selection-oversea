@@ -49,8 +49,8 @@ export default async function ProductDetail({ params }: { params: { id: string }
             <li>评论：{p.review_count} / {p.review_rating}</li>
             <li>
               录入时间：
-              {p.import_at
-                ? new Date(p.import_at).toLocaleString()
+              {p.import_at || p.created_at
+                ? new Date(p.import_at || p.created_at).toLocaleString()
                 : '-'}
             </li>
           </ul>

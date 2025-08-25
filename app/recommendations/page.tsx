@@ -99,7 +99,7 @@ export default function RecommendationsPage() {
           age_months: r.age_months ?? null,
           platform_score: r.platform_score ?? null,
           independent_score: r.independent_score ?? null,
-          import_at: r.import_at ?? null,
+          import_at: r.import_at ?? r.created_at ?? null,
         }));
         for (const p of mapped) {
           const key = p.asin || p.id;
