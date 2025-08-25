@@ -95,7 +95,7 @@ export default function ProductsPage() {
           age_months: r.age_months ?? null,
           platform_score: r.platform_score ?? null,
           independent_score: r.independent_score ?? null,
-          import_at: r.import_at ?? r.insert_at ?? null,
+          import_at: r.import_at ?? null,
         }));
         collected = collected.concat(mapped);
       }
@@ -328,7 +328,7 @@ export default function ProductsPage() {
                 </td>
                 <td className="p-2 text-right">
                   {p.import_at
-                    ? new Date(p.import_at).toLocaleDateString()
+                    ? new Date(p.import_at).toLocaleString()
                     : '-'}
                 </td>
               </tr>
