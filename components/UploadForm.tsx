@@ -18,9 +18,14 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
 
     try {
       const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await resp.json().catch(() => ({ error: 'Upload failed' }));
       if (!resp.ok) {
-        const data = await resp.json().catch(() => ({ error: 'Upload failed' }));
         throw new Error(data.error || 'Upload failed');
+      }
+      if (data.fileId) {
+        try {
+          localStorage.setItem('pendingUploadFileId', data.fileId);
+        } catch {}
       }
       setStatus('后台处理中');
       onUploaded?.();

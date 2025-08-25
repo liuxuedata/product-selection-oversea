@@ -1,6 +1,5 @@
 import ScoreBadge from "@/components/ScoreBadge";
 import ImportTimeCell from "@/components/ImportTimeCell";
-import ImportStatusCell from "@/components/ImportStatusCell";
 
 async function getData(id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/row/${id}`, {
@@ -49,9 +48,6 @@ export default async function ProductDetail({ params }: { params: { id: string }
             <li>品牌：{p.brand}</li>
             <li>价格：{p.price}</li>
             <li>评论：{p.review_count} / {p.review_rating}</li>
-            <li>
-              导入状态：<ImportStatusCell status={p.status} />
-            </li>
             <li>
               录入时间：<ImportTimeCell import_at={p.import_at} created_at={p.created_at} />
             </li>

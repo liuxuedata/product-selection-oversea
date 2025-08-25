@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
 import ImportTimeCell from "@/components/ImportTimeCell";
-import ImportStatusCell from "@/components/ImportStatusCell";
+import UploadNotifier from "@/components/UploadNotifier";
 
 type Product = {
   id: string;
@@ -28,7 +28,6 @@ type Product = {
   platform_score: number | null;
   independent_score: number | null;
   import_at: string | null;
-  status: string | null;
 };
 
 export default function RecommendationsPage() {
@@ -95,7 +94,6 @@ export default function RecommendationsPage() {
             platform_score: r.platform_score ?? null,
             independent_score: r.independent_score ?? null,
             import_at: r.import_at ?? r.created_at ?? null,
-            status: r.status ?? null,
           }));
         for (const p of mapped) {
           const key = p.asin || p.id;
@@ -156,6 +154,7 @@ export default function RecommendationsPage() {
 
   return (
     <div className="p-6 space-y-4 overflow-auto">
+      <UploadNotifier />
       <h1 className="text-2xl font-semibold">推荐产品</h1>
       <div className="flex flex-wrap items-end gap-2">
         <div>
@@ -224,7 +223,6 @@ export default function RecommendationsPage() {
             {renderHeader('年龄(月)', 'age_months', 'text-right')}
             {renderHeader('平台评分', 'platform_score', 'text-right')}
             {renderHeader('独立站评分', 'independent_score', 'text-right')}
-            {renderHeader('导入状态', 'status')}
             {renderHeader('录入时间', 'import_at')}
           </tr>
         </thead>
@@ -302,9 +300,6 @@ export default function RecommendationsPage() {
                 ) : (
                   '-'
                 )}
-              </td>
-              <td className="p-2">
-                <ImportStatusCell status={p.status} />
               </td>
               <td className="p-2">
                 <ImportTimeCell import_at={p.import_at} />
