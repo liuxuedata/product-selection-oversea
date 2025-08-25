@@ -49,7 +49,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // 1) 解析上传
-    const { file } = await parseForm(req);
+    const { file, fields } = await parseForm(req);
     const buf = fs.readFileSync(file.filepath);
 
     // 2) 解析 Excel/CSV
@@ -57,6 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('parsed upload', file.originalFilename, 'rows', rows.length);
 
     // 3) 记录文件元数据
+    const docType = Array.isArray(fields.docType) ? fields.docType[0] : fields.docType;
     const { data: fileRow, error: fileErr } = await supabase
       .from('blackbox_files')
       .insert({
@@ -64,6 +65,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sheet_name: sheetName,
         row_count: rows.length,
         column_names: columns,
+        doc_type: docType,
+        status: 'processing',
       })
       .select('id')
       .single();
@@ -73,10 +76,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     console.log('file meta inserted', fileRow.id);
 
-    // 4) 逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
-    let inserted = 0, skipped = 0, invalid = 0;
+    // 4) 异步逐行插入（命中 asin_norm / url_norm 的唯一索引冲突 => 跳过）
+    (async () => {
+      let inserted = 0, skipped = 0, invalid = 0;
 
-    for (let i = 0; i < rows.length; i++) {
+      for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
       const asin  = pickString(r, ['ASIN', 'asin', 'Asin']);
       const url   = pickString(r, ['URL', 'Url', 'url', 'Product URL', 'Product Url', '产品链接', '产品 URL', '产品URL', '链接', 'Link']);
@@ -169,29 +173,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const scores = computeScores(payload);
       await supabase.from('product_scores').upsert({ row_id: insertedRow.id, ...scores });
       inserted++;
-    }
+      }
 
-    // 5) 将统计写回文件记录并标记行已完成（忽略错误）
-    await supabase
-      .from('blackbox_files')
-      .update({
-        inserted_count: inserted,
-        skipped_count: skipped,
-        invalid_count: invalid,
-      })
-      .eq('id', fileRow.id);
-    await supabase
-      .from('blackbox_rows')
-      .update({ status: 'completed' })
-      .eq('file_id', fileRow.id);
-    console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
+      // 5) 将统计写回文件记录并标记行已完成（忽略错误）
+      await supabase
+        .from('blackbox_files')
+        .update({
+          inserted_count: inserted,
+          skipped_count: skipped,
+          invalid_count: invalid,
+          status: 'completed',
+        })
+        .eq('id', fileRow.id);
+      await supabase
+        .from('blackbox_rows')
+        .update({ status: 'completed' })
+        .eq('file_id', fileRow.id);
+      console.log('upload stats', { fileId: fileRow.id, inserted, skipped, invalid });
+    })().catch((e) => console.error('background import failed', e));
 
-    // 6) 返回结果
+    // 6) 返回结果（立即响应）
     return res.status(200).json({
       fileId: fileRow.id,
-      inserted,
-      skipped,
-      invalid,
     });
 
   } catch (e: any) {

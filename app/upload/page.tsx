@@ -9,6 +9,7 @@ type FileRow = {
   uploaded_at: string;
   row_count?: number;
   inserted_count?: number;
+  status?: string;
 };
 
 export default function HomePage() {
@@ -22,6 +23,8 @@ export default function HomePage() {
 
   useEffect(() => {
     load();
+    const t = setInterval(load, 3000);
+    return () => clearInterval(t);
   }, []);
 
   return (
@@ -36,6 +39,7 @@ export default function HomePage() {
               <th className="p-2 text-left">文件名</th>
               <th className="p-2 text-left">类型</th>
               <th className="p-2 text-left">上传时间</th>
+              <th className="p-2 text-left">状态</th>
               <th className="p-2 text-right">录入条数</th>
             </tr>
           </thead>
@@ -45,12 +49,13 @@ export default function HomePage() {
                 <td className="p-2">{r.filename}</td>
                 <td className="p-2">{r.doc_type}</td>
                 <td className="p-2">{new Date(r.uploaded_at).toLocaleString()}</td>
+                <td className="p-2">{r.status === 'completed' ? '导入完成' : '导入中...'}</td>
                 <td className="p-2 text-right">{r.inserted_count ?? r.row_count ?? '-'}</td>
               </tr>
             ))}
             {!records.length && (
               <tr>
-                <td className="p-2 text-center" colSpan={4}>
+                <td className="p-2 text-center" colSpan={5}>
                   暂无记录
                 </td>
               </tr>

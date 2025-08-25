@@ -16,19 +16,13 @@ export default function UploadNotifier() {
         if (res.ok) {
           const data = await res.json();
           const file = data.file;
-          if (file) {
-            const total =
-              (file.inserted_count || 0) +
-              (file.skipped_count || 0) +
-              (file.invalid_count || 0);
-            if (total > 0) {
-              setMessage(`文件上传成功，更新${file.inserted_count || 0}条数据`);
-              setOpen(true);
-              clearInterval(timer);
-              localStorage.removeItem("pendingUploadFileId");
-              setTimeout(() => setOpen(false), 3000);
-              return;
-            }
+          if (file?.status === 'completed') {
+            setMessage(`文件上传成功，更新${file.inserted_count || 0}条数据`);
+            setOpen(true);
+            clearInterval(timer);
+            localStorage.removeItem("pendingUploadFileId");
+            setTimeout(() => setOpen(false), 3000);
+            return;
           }
         } else {
           throw new Error("status request failed");

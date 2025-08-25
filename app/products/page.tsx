@@ -59,9 +59,10 @@ export default function ProductsPage() {
   useEffect(() => {
     async function load() {
       const files = await fetch('/api/files').then((r) => r.json());
-      if (!Array.isArray(files) || !files.length) return;
+      const completed = Array.isArray(files) ? files.filter((f: any) => f.status === 'completed') : [];
+      if (!completed.length) return;
       let collected: Product[] = [];
-      for (const file of files) {
+      for (const file of completed) {
         if (collected.length >= FETCH_LIMIT) break;
         const params = new URLSearchParams({
           page: '1',

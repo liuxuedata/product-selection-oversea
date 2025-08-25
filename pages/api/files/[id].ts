@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
   const { data, error } = await supabase
     .from('blackbox_files')
-    .select('id, row_count, inserted_count, skipped_count, invalid_count')
+    .select('id, row_count, inserted_count, skipped_count, invalid_count, status')
     .eq('id', id)
     .single();
   if (error) return res.status(500).json({ error: error.message });
