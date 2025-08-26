@@ -17,6 +17,7 @@ TikTok → Tech & Electronics / Vehicle & Transportation
 
 一、数据库设计
 -- 数据源
+-- 数据源
 create table if not exists trend_source (
   source_id text primary key,       -- 'google_trends', 'tiktok_trends'
   display_name text not null
@@ -44,7 +45,7 @@ create table if not exists trend_raw (
   source_id text references trend_source(source_id),
   country text,
   category_key text,
-  window text check (window in ('1d','7d','30d')),
+  window_period text check (window_period in ('1d','7d','30d')), -- 避免使用保留字 window
   keyword text not null,
   rank int,
   raw_score numeric,
@@ -58,7 +59,7 @@ create table if not exists trend_keyword_daily (
   keyword text,
   country text,
   category_key text,
-  window text,
+  window_period text,
   g_score numeric,
   t_score numeric,
   trend_score numeric,
@@ -79,6 +80,7 @@ create table if not exists keyword_pool (
   last_score numeric,
   hit_days int default 1
 );
+
 
 二、采集任务
 Google Trends
@@ -181,3 +183,4 @@ TikTok + Google 数据均入库成功
 综合评分 ≥70 的关键词能推送到现有选品库
 
 导航栏顶部固定显示 Trends 入口
+
