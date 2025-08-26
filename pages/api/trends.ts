@@ -9,7 +9,7 @@ type TrendItem = {
   sources: string[];
 };
 
-const sample: TrendItem[] = [
+const base: TrendItem[] = [
   {
     keyword: "wireless charger",
     trend_score: 92,
@@ -36,10 +36,32 @@ const sample: TrendItem[] = [
   },
 ];
 
+function adjustScore(baseScore: number, seed: string) {
+  const delta =
+    (seed.charCodeAt(0) + seed.charCodeAt(seed.length - 1)) % 10 - 5;
+  const value = baseScore + delta;
+  return Math.max(0, Math.min(100, value));
+}
+
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  res.status(200).json({ items: sample });
+  const {
+    country = "US",
+    category = "shopping",
+  } = req.query as { country?: string; category?: string };
+
+  const seed = `${country}-${category}`;
+  const items = base.map((item, idx) => ({
+    ...item,
+    keyword: `${item.keyword}-${country}-${category}`,
+    trend_score: adjustScore(item.trend_score, seed),
+    g_score: adjustScore(item.g_score, seed),
+    t_score: adjustScore(item.t_score, seed),
+    rank: idx + 1,
+  }));
+
+  res.status(200).json({ items });
 }
 
