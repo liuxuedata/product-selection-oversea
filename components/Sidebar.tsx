@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const nav = [
+  { label: "Trends", href: "/trends" },
   { label: "推荐产品", href: "/recommendations" },
   { label: "产品列表", href: "/products" },
   { label: "文件导入", href: "/upload" },
