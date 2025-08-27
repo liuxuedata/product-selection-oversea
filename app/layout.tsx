@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import "@/styles/globals.css";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
+
+export const metadata: Metadata = {
+  title: "选品平台",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml", sizes: "any" }],
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
