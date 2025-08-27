@@ -3,10 +3,20 @@ import { supabase } from '@/lib/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method Not Allowed' });
-  const { data, error } = await supabase
+  const limitParam = req.query.limit;
+  const limit = Array.isArray(limitParam)
+    ? parseInt(limitParam[0], 10)
+    : limitParam
+    ? parseInt(limitParam, 10)
+    : undefined;
+  let query = supabase
     .from('blackbox_files')
     .select('id, filename, uploaded_at, row_count, inserted_count')
     .order('uploaded_at', { ascending: false });
+  if (typeof limit === 'number' && !isNaN(limit)) {
+    query = query.limit(limit);
+  }
+  const { data, error } = await query;
   if (error) {
     console.error('fetch files failed', error.message);
     return res.status(500).json({ error: error.message });

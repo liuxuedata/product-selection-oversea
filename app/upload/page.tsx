@@ -15,9 +15,11 @@ export default function HomePage() {
   const [records, setRecords] = useState<FileRow[]>([]);
 
   const load = () => {
-    fetch("/api/files")
+    fetch("/api/files?limit=10")
       .then((r) => r.json())
-      .then((data) => setRecords(Array.isArray(data) ? data : []));
+      .then((data) =>
+        setRecords(Array.isArray(data) ? data.slice(0, 10) : [])
+      );
   };
 
   useEffect(() => {
