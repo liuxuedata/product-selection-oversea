@@ -14,7 +14,8 @@
     "react-dom": "18.2.0",
     "@supabase/supabase-js": "^2.7.1",
     "formidable": "^3.5.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "pg": "^8.11.5"               // ← 新增
   },
   "devDependencies": {
     "typescript": "^5.0.2",
@@ -29,3 +30,4 @@
     "eslint-config-next": "13.5.6"
   }
 }
+
