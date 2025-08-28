@@ -15,7 +15,8 @@ export async function GET() {
     }
 
     // 2) 动态导入运行器（就是上面新建的 mjs）
-    const mod = await import("../../../scripts/fetch_tiktok_trends_runtime.mjs");
+    const mod = await import("../../../../scripts/fetch_tiktok_trends_runtime.mjs");
+
     const run = mod?.default;
     if (!run) throw new Error("Cannot load runtime module");
 
