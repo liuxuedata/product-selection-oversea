@@ -35,12 +35,19 @@ export default async function run(opts = {}) {
   }
 
   // 3) 动态导入 pg（避免构建期打包）
-  const mod = await import("pg");
-  const { Client } = mod.default || mod;
+  // ...
+const mod = await import("pg");
+const { Client } = mod.default || mod;
 
   // 4) 连接数据库并做几条轻量查询
-  const client = new Client({ connectionString: dsn });
-  await client.connect();
+ 
+const client = new Client({
+  connectionString: dsn,
+  ssl: { rejectUnauthorized: false }   // 这里
+});
+await client.connect();
+// ...
+
 
   // now & db
   const meta = await client.query("select now() as now, current_database() as db");
