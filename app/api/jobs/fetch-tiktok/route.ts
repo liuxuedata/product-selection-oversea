@@ -5,7 +5,6 @@ import fs from "fs";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-
 export async function GET() {
   try {
     // 1) 写回 TikTok 登录态
@@ -15,7 +14,7 @@ export async function GET() {
       process.env.TTC_STATE_FILE = p;
     }
 
-    // 2) 选择数据库连接串（优先连接池）
+    // 2) 选择 DSN（优先连接池）
     const dsn =
       process.env.PG_DSN_POOL ||
       process.env.PG_DSN ||
@@ -24,19 +23,17 @@ export async function GET() {
 
     if (!dsn) {
       return NextResponse.json(
-        { ok: false, error: "Missing DSN (PG_DSN_POOL/PG_DSN/POSTGRES_URL...)" },
+        { ok: false, error: "Missing DSN (PG_DSN_POOL/PG_DSN/POSTGRES_URL…)" },
         { status: 500 }
       );
     }
 
-    // 3) 动态导入 pg，并显式关闭证书校验（关键）
-    // @ts-expect-error: types at runtime
-    const mod = await import("pg");
-    const { Client } = (mod as any).default || mod;
+    // 3) 动态导入 pg（不再使用 ts-expect-error）
+    const { Client } = await import("pg");
 
     const client = new Client({
       connectionString: dsn,
-      ssl: { rejectUnauthorized: false },
+      ssl: { rejectUnauthorized: false }, // 关键：处理 self-signed
     });
 
     await client.connect();
@@ -50,7 +47,7 @@ export async function GET() {
       );
       rawToday = r?.rows?.[0]?.c ?? 0;
     } catch {
-      rawToday = null; // 表未建也不报错
+      rawToday = null; // 表未建则忽略
     }
 
     await client.end();
@@ -61,7 +58,7 @@ export async function GET() {
       now: meta.rows?.[0]?.now,
       stateFile: process.env.TTC_STATE_FILE || null,
       rawToday,
-      note: "已在路由内直接连接 PG，并使用 ssl.rejectUnauthorized=false。"
+      note: "路由内直连 PG，已设置 ssl.rejectUnauthorized=false。",
     });
   } catch (e: any) {
     return NextResponse.json(
@@ -70,3 +67,4 @@ export async function GET() {
     );
   }
 }
+
