@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ThHTMLAttributes, TdHTMLAttributes } from "react";
 
 type TrendRow = {
   source_id: string;
@@ -40,7 +41,7 @@ export default function TrendsPage() {
   const [total, setTotal] = useState(0);
 
   const [filters, setFilters] = useState({
-    source_id: "all", // 'all' | 'tiktok_trends' | 'google_trends'
+    source_id: "all" as "all" | "tiktok_trends" | "google_trends",
     country: "US",
     category_key: "tech_electronics",
     window_period: "7d",
@@ -51,7 +52,6 @@ export default function TrendsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
-  // 组合查询字符串
   const searchQS = useMemo(() => {
     const params = new URLSearchParams();
     if (filters.source_id !== "all") params.set("source_id", filters.source_id);
@@ -77,8 +77,9 @@ export default function TrendsPage() {
     }
   }
 
+  // 任何筛选变化回到第一页
   useEffect(() => {
-    setPage(1); // 任何筛选变化回到第一页
+    setPage(1);
   }, [filters.source_id, filters.country, filters.category_key, filters.window_period, filters.sort, filters.mode]);
 
   useEffect(() => {
@@ -134,7 +135,7 @@ export default function TrendsPage() {
           <label className="text-xs text-gray-500 mb-1">来源</label>
           <select
             value={filters.source_id}
-            onChange={(e) => setFilters({ ...filters, source_id: e.target.value })}
+            onChange={(e) => setFilters({ ...filters, source_id: e.target.value as any })}
             className="border rounded px-2 py-1 min-w-[160px]"
           >
             <option value="all">全部来源</option>
@@ -226,7 +227,7 @@ export default function TrendsPage() {
       {/* 统计 & 分页 */}
       <div className="flex items-center gap-3 text-sm">
         <span>
-          共 <b>{total}</b> 条，当前第 <b>{page}</b> / <b>{totalPages}</b> 页
+          共 <b>{total}</b> 条，当前第 <b>{page}</b> / <b>{Math.max(1, Math.ceil(total / pageSize))}</b> 页
         </span>
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -238,7 +239,7 @@ export default function TrendsPage() {
           </button>
           <button
             className="px-3 py-1 border rounded disabled:opacity-50"
-            disabled={page >= totalPages}
+            disabled={page >= Math.max(1, Math.ceil(total / pageSize))}
             onClick={() => setPage((p) => p + 1)}
           >
             下一页
@@ -282,13 +283,18 @@ export default function TrendsPage() {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={`${r.source_id}-${r.country}-${r.keyword}-${r.collected_at}-${i}`} className="odd:bg-white even:bg-gray-50/30">
+                <tr
+                  key={`${r.source_id}-${r.country}-${r.keyword}-${r.collected_at}-${i}`}
+                  className="odd:bg-white even:bg-gray-50/30"
+                >
                   <Td>{r.source_id}</Td>
                   <Td>{r.country}</Td>
                   <Td>{r.category_key}</Td>
                   <Td>{r.window_period}</Td>
                   <Td>{r.rank ?? ""}</Td>
-                  <Td className="max-w-[360px] truncate" title={r.keyword}>{r.keyword}</Td>
+                  <Td className="max-w-[360px] truncate" title={r.keyword}>
+                    {r.keyword}
+                  </Td>
                   <Td>{r.raw_score ?? ""}</Td>
                   <Td>{formatDateTime(r.collected_at)}</Td>
                 </tr>
@@ -301,12 +307,27 @@ export default function TrendsPage() {
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
-  return <th className="border px-2 py-2 text-left">{children}</th>;
+/* --------- 通用表格单元格（修复 className/title 类型问题） --------- */
+
+function Th(props: ThHTMLAttributes<HTMLTableCellElement>) {
+  const { children, className = "", ...rest } = props;
+  return (
+    <th className={`border px-2 py-2 text-left ${className}`} {...rest}>
+      {children}
+    </th>
+  );
 }
-function Td({ children }: { children: React.ReactNode }) {
-  return <td className="border px-2 py-1 align-top">{children}</td>;
+
+function Td(props: TdHTMLAttributes<HTMLTableCellElement>) {
+  const { children, className = "", ...rest } = props;
+  return (
+    <td className={`border px-2 py-1 align-top ${className}`} {...rest}>
+      {children}
+    </td>
+  );
 }
+
+/* ------------------- 小工具函数 ------------------- */
 
 function formatDateTime(iso: string) {
   try {
