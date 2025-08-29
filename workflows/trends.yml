@@ -1,0 +1,37 @@
+name: Trends Pipeline
+
+on:
+  schedule:
+    - cron: "30 0 * * *"       # UTC 时间：每天两次示例
+    - cron: "30 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      PG_DSN_POOL: ${{ secrets.PG_DSN_POOL }}       # 在仓库 Secrets 里设置，复制 Vercel 的 POSTGRES_URL
+      TTC_STATE_JSON: ${{ secrets.TTC_STATE_JSON }} # 粘贴 tiktok_state.json 的全文内容
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: |
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Restore tiktok_state.json
+        run: |
+          echo "$TTC_STATE_JSON" > tiktok_state.json
+
+      - name: Run TikTok fetch
+        env:
+          PG_DSN: ${{ env.PG_DSN_POOL }}
+          TTC_STATE_FILE: ${{ github.workspace }}/tiktok_state.json
+        run: |
+          npx ts-node scripts/fetch_tiktok_trends.ts
