@@ -7,6 +7,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
+    // 全局兜底：关闭 TLS 证书校验 & PG sslmode no-verify
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    process.env.PGSSLMODE = "no-verify";
+
     // 1) 写回 TikTok 登录态
     if (process.env.TTC_STATE_JSON) {
       const p = "/tmp/tiktok_state.json";
@@ -28,12 +32,13 @@ export async function GET() {
       );
     }
 
-    // 3) 动态导入 pg（不再使用 ts-expect-error）
+    // 3) 动态导入 pg
     const { Client } = await import("pg");
 
+    // 强制禁用证书校验（再兜底一次）
     const client = new Client({
       connectionString: dsn,
-      ssl: { rejectUnauthorized: false }, // 关键：处理 self-signed
+      ssl: { rejectUnauthorized: false }
     });
 
     await client.connect();
@@ -58,7 +63,7 @@ export async function GET() {
       now: meta.rows?.[0]?.now,
       stateFile: process.env.TTC_STATE_FILE || null,
       rawToday,
-      note: "路由内直连 PG，已设置 ssl.rejectUnauthorized=false。",
+      note: "已在路由内关闭 TLS 校验（NODE_TLS_REJECT_UNAUTHORIZED=0 + PGSSLMODE=no-verify）并设置 ssl.rejectUnauthorized=false。"
     });
   } catch (e: any) {
     return NextResponse.json(
@@ -67,4 +72,3 @@ export async function GET() {
     );
   }
 }
-
