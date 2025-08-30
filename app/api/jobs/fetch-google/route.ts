@@ -17,9 +17,9 @@ const REGION_MAP: Record<string, { gt: string; ttc: string }> = {
 };
 
 export async function GET(req: Request) {
-  // 允许 GET 触发，方便浏览器调试；也可以只导出 POST
   return handle(req);
 }
+
 export async function POST(req: Request) {
   return handle(req);
 }
@@ -69,9 +69,8 @@ async function handle(req: Request) {
       [category_key]
     );
 
-    // 1) 拉热门搜索
+    // 拉热门搜索
     const trending = await gtrends.trendingSearches({ geo: country });
-    // 返回的是 XML-ish JSON；解析到关键词列表
     const items: string[] = [];
     try {
       const obj = JSON.parse(trending);
@@ -82,18 +81,14 @@ async function handle(req: Request) {
       }
     } catch {}
 
-    // 2) 对每个关键词取 7d/30d 的 interestOverTime，拿最后一个 datapoint
-    const now = Date.now();
-    const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
-    const startTime = new Date(now - spanMs);
-
+    // 处理数据并插入数据库
     let ok = 0, fail = 0;
 
     for (const kw of items) {
       try {
         const res = await gtrends.interestOverTime({
           keyword: kw,
-          startTime,
+          startTime: new Date(Date.now() - 7 * 24 * 3600 * 1000),
           endTime: new Date(),
           geo: country,
         });
@@ -112,7 +107,7 @@ async function handle(req: Request) {
             "google_trends",
             country,
             category_key,
-            window_period,
+            "7d",
             kw,
             null,
             score,
