@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { ThHTMLAttributes, TdHTMLAttributes } from "react";
+import Link from "next/link";
 
 type TrendRow = {
   source_id: string;
@@ -77,7 +78,7 @@ export default function TrendsPage() {
     }
   }
 
-  // 任何筛选变化回到第一页
+  // 任一筛选变化回到第一页
   useEffect(() => {
     setPage(1);
   }, [filters.source_id, filters.country, filters.category_key, filters.window_period, filters.sort, filters.mode]);
@@ -122,6 +123,48 @@ export default function TrendsPage() {
     a.download = `trends_${filters.country}_${filters.category_key}_${filters.window_period}_${filters.mode}_${today}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // —— 手动采集（TikTok / Google） ——
+  const [collectingTT, setCollectingTT] = useState(false);
+  const [collectingGG, setCollectingGG] = useState(false);
+
+  async function triggerCollectTikTok() {
+    try {
+      setCollectingTT(true);
+      const qs = new URLSearchParams({
+        country: filters.country,
+        category_key: filters.category_key,
+        window_period: filters.window_period,
+      });
+      const r = await fetch(`/api/jobs/fetch-tiktok?${qs.toString()}`, { cache: "no-store" });
+      const j = await r.json();
+      alert(`TikTok 采集完成: ${JSON.stringify(j)}`);
+      fetchData();
+    } catch (e: any) {
+      alert(`TikTok 采集失败: ${e?.message || e}`);
+    } finally {
+      setCollectingTT(false);
+    }
+  }
+
+  async function triggerCollectGoogle() {
+    try {
+      setCollectingGG(true);
+      const qs = new URLSearchParams({
+        country: filters.country,
+        category_key: filters.category_key,
+        window_period: filters.window_period,
+      });
+      const r = await fetch(`/api/jobs/fetch-google?${qs.toString()}`, { cache: "no-store" });
+      const j = await r.json();
+      alert(`Google 采集完成: ${JSON.stringify(j)}`);
+      fetchData();
+    } catch (e: any) {
+      alert(`Google 采集失败: ${e?.message || e}`);
+    } finally {
+      setCollectingGG(false);
+    }
   }
 
   return (
@@ -218,10 +261,26 @@ export default function TrendsPage() {
           <span className="text-sm">只看最新一次</span>
         </label>
 
-        {/* 导出 */}
-        <button onClick={exportCSV} className="ml-auto px-3 py-1 border rounded hover:bg-gray-50">
-          导出当前结果 CSV
-        </button>
+        {/* 导出 & 手动采集 */}
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={exportCSV} className="px-3 py-1 border rounded hover:bg-gray-50">
+            导出当前结果 CSV
+          </button>
+          <button
+            onClick={triggerCollectTikTok}
+            disabled={collectingTT}
+            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+          >
+            {collectingTT ? "采集中…" : "手动采集一次（TikTok）"}
+          </button>
+          <button
+            onClick={triggerCollectGoogle}
+            disabled={collectingGG}
+            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+          >
+            {collectingGG ? "采集中…" : "手动采集一次（Google）"}
+          </button>
+        </div>
       </div>
 
       {/* 统计 & 分页 */}
@@ -293,7 +352,12 @@ export default function TrendsPage() {
                   <Td>{r.window_period}</Td>
                   <Td>{r.rank ?? ""}</Td>
                   <Td className="max-w-[360px] truncate" title={r.keyword}>
-                    {r.keyword}
+                    <Link
+                      href={`/trends/${encodeURIComponent(r.keyword)}?source_id=${filters.source_id}&country=${filters.country}&category_key=${filters.category_key}&window_period=${filters.window_period}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {r.keyword}
+                    </Link>
                   </Td>
                   <Td>{r.raw_score ?? ""}</Td>
                   <Td>{formatDateTime(r.collected_at)}</Td>
@@ -307,7 +371,7 @@ export default function TrendsPage() {
   );
 }
 
-/* --------- 通用表格单元格（修复 className/title 类型问题） --------- */
+/* --------- 通用表格单元格（支持 className/title 等属性） --------- */
 
 function Th(props: ThHTMLAttributes<HTMLTableCellElement>) {
   const { children, className = "", ...rest } = props;
@@ -344,3 +408,4 @@ function csvEscape(s: string) {
   const escaped = String(s).replace(/"/g, '""');
   return needQuote ? `"${escaped}"` : escaped;
 }
+
