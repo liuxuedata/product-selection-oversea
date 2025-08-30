@@ -1,0 +1,50 @@
+name: Trends Collect & Upsert (TikTok + Google)
+
+on:
+  schedule:
+    - cron: "0 2 * * *"    # 每天 UTC 02:00
+    - cron: "0 14 * * *"   # 每天 UTC 14:00
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: |
+          npm i google-trends-api
+
+      # 如果你跑 Playwright，解注释下面两步并提供你的采集脚本：
+      # - name: Install Playwright
+      #   run: |
+      #     npm i -D playwright
+      #     npx playwright install --with-deps
+      # - name: Restore TikTok storageState
+      #   run: echo '${{ secrets.TTC_STATE_JSON }}' > tiktok_state.json
+
+      - name: Collect Google Trends
+        env:
+          MARKETS: "US,UK,FR,DE"
+          CATEGORIES: "tech_electronics,vehicle_transportation"
+          WINDOWS: "7d,30d"
+        run: node scripts/fetch_google_trends_ci.mjs > google.json
+
+      - name: Collect TikTok Trends (demo)
+        env:
+          MARKETS: "US,UK,FR,DE"
+          CATEGORIES: "tech_electronics,vehicle_transportation"
+          WINDOWS: "7d,30d"
+        run: node scripts/fetch_tiktok_trends_ci.mjs > tiktok.json
+
+      - name: Merge & Upsert
+        run: |
+          node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('google.json'));const b=JSON.parse(fs.readFileSync('tiktok.json'));fs.writeFileSync('all.json',JSON.stringify([...a,...b]));"
+          curl -sS -X POST "${{ secrets.TRENDS_UPSERT_URL }}" \
+            -H "content-type: application/json" \
+            --data-binary @all.json
