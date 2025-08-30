@@ -15,6 +15,7 @@
     "@supabase/supabase-js": "^2.7.1",
     "formidable": "^3.5.2",
     "xlsx": "^0.18.5",
+     "google-trends-api": "^1.0.0"，
     "pg": "^8.11.5"
   },
   "devDependencies": {
