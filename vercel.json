@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/jobs/fetch-tiktok?country=US&category_key=tech_electronics&window_period=7d",
+      "schedule": "0 01 * * *"
+    },
+    {
+      "path": "/api/jobs/fetch-tiktok?country=DE&category_key=vehicle_transportation&window_period=7d",
+      "schedule": "15 01 * * *"
+    }
+  ]
+}
