@@ -1,4 +1,3 @@
-// app/api/jobs/fetch-google/route.ts
 import { NextResponse } from "next/server";
 
 // Vercel/Next
@@ -16,10 +15,6 @@ const REGION_MAP: Record<string, { gt: string; ttc: string }> = {
   DE: { gt: "DE", ttc: "DE" },
 };
 
-export async function GET(req: Request) {
-  return handle(req);
-}
-
 export async function POST(req: Request) {
   return handle(req);
 }
@@ -35,11 +30,7 @@ async function handle(req: Request) {
     return NextResponse.json({ ok: false, error: `country not supported: ${countryRaw}` }, { status: 400 });
   }
 
-  const dsn =
-    process.env.PG_DSN_POOL ||
-    process.env.PG_DSN ||
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_URL_NON_POOLING;
+  const dsn = process.env.PG_DSN_POOL || process.env.PG_DSN || process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING;
   if (!dsn) return NextResponse.json({ ok: false, error: "Missing PG DSN" }, { status: 500 });
 
   try {
@@ -50,7 +41,6 @@ async function handle(req: Request) {
     const client = new Client({ connectionString: dsn, ssl: { rejectUnauthorized: false } });
     await client.connect();
 
-    // 确保字典表
     const region = REGION_MAP[country] || { gt: country, ttc: country };
     await client.query(
       `insert into trend_source(source_id, display_name)
@@ -69,7 +59,6 @@ async function handle(req: Request) {
       [category_key]
     );
 
-    // 拉热门搜索
     const trending = await gtrends.trendingSearches({ geo: country });
     const items: string[] = [];
     try {
@@ -81,14 +70,16 @@ async function handle(req: Request) {
       }
     } catch {}
 
-    // 处理数据并插入数据库
-    let ok = 0, fail = 0;
+    const now = Date.now();
+    const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
+    const startTime = new Date(now - spanMs);
 
+    let ok = 0, fail = 0;
     for (const kw of items) {
       try {
         const res = await gtrends.interestOverTime({
           keyword: kw,
-          startTime: new Date(Date.now() - 7 * 24 * 3600 * 1000),
+          startTime,
           endTime: new Date(),
           geo: country,
         });
@@ -107,7 +98,7 @@ async function handle(req: Request) {
             "google_trends",
             country,
             category_key,
-            "7d",
+            window_period,
             kw,
             null,
             score,
