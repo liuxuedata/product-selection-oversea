@@ -11,18 +11,18 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.7.1",
     "formidable": "^3.5.2",
-<<<<<<< HEAD
+
     "google-trends-api": "^4.9.2",
     "next": "13.5.6",
     "pg": "^8.16.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "xlsx": "^0.18.5"
-=======
+
     "xlsx": "^0.18.5",
      "google-trends-api": "^1.0.0",
     "pg": "^8.11.5"
->>>>>>> 68c09bb89a74f19b64c870a01e679fc374470143
+
   },
   "devDependencies": {
     "@types/formidable": "^3.4.1",
