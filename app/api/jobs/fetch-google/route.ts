@@ -151,7 +151,7 @@ async function handle(req: Request) {
     items.push(...categoryKeywords);
     
     // 去重并限制数量
-    const uniqueItems = [...new Set(items)].slice(0, 50);
+    const uniqueItems = Array.from(new Set(items)).slice(0, 50);
 
     const now = Date.now();
     const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
