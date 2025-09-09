@@ -26,24 +26,22 @@ export default function TrendKeywordDetail() {
   const params = useParams();
   const searchParams = useSearchParams();
   
-  if (!params?.keyword) {
-    return (
-      <div className="p-6">
-        <div className="text-red-600 mb-4">❌ 无效的关键词参数</div>
-        <Link href="/trends" className="text-blue-600 hover:underline">
-          ← 返回趋势列表
-        </Link>
-      </div>
-    );
-  }
-  
-  const keyword = decodeURIComponent(params.keyword as string);
-  
+  // 所有Hooks必须在顶层调用
   const [data, setData] = useState<TrendDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 检查参数有效性
+  const keyword = params?.keyword ? decodeURIComponent(params.keyword as string) : null;
 
   useEffect(() => {
+    // 只有在keyword有效时才执行
+    if (!keyword) {
+      setError('无效的关键词参数');
+      setLoading(false);
+      return;
+    }
+
     async function fetchData() {
       try {
         setLoading(true);
