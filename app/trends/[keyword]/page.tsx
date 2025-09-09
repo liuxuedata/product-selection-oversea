@@ -25,6 +25,18 @@ type ApiResp = {
 export default function TrendKeywordDetail() {
   const params = useParams();
   const searchParams = useSearchParams();
+  
+  if (!params?.keyword) {
+    return (
+      <div className="p-6">
+        <div className="text-red-600 mb-4">❌ 无效的关键词参数</div>
+        <Link href="/trends" className="text-blue-600 hover:underline">
+          ← 返回趋势列表
+        </Link>
+      </div>
+    );
+  }
+  
   const keyword = decodeURIComponent(params.keyword as string);
   
   const [data, setData] = useState<TrendDetail[]>([]);
