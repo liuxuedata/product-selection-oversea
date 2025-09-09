@@ -130,6 +130,59 @@ function generateRealTrendKeywords(country: string, category_key: string): strin
       'Gimme!', 'Joe', 'Stumptown', 'Blue Bottle', 'Intelligentsia', 'Philz', 'La Colombe',
       'Counter Culture', 'Verve', 'Ritual', 'Four Barrel', 'Sightglass', 'Heart', 'Coava',
       'Onyx', 'Methodical', 'Black & White', 'Perc', 'Vibrant', 'Sey', 'Passenger', 'Brandywine'
+    ],
+    'sports_outdoor': [
+      'Nike', 'Adidas', 'Under Armour', 'Puma', 'New Balance', 'Reebok', 'Converse', 'Vans',
+      'Jordan', 'Yeezy', 'Supreme', 'Champion', 'Fila', 'ASICS', 'Brooks', 'Saucony',
+      'Running', 'Basketball', 'Football', 'Soccer', 'Tennis', 'Golf', 'Baseball', 'Hockey',
+      'Swimming', 'Cycling', 'Hiking', 'Camping', 'Fishing', 'Surfing', 'Snowboarding', 'Skiing',
+      'Gym', 'Workout', 'Fitness', 'Yoga', 'Pilates', 'CrossFit', 'Marathon', 'Triathlon',
+      'Olympics', 'World Cup', 'Championship', 'Tournament', 'Training', 'Exercise', 'Sports',
+      'Athletic', 'Performance', 'Endurance', 'Strength', 'Cardio', 'Flexibility', 'Recovery',
+      'Nutrition', 'Supplements', 'Protein', 'Creatine', 'BCAA', 'Pre-workout', 'Post-workout',
+      'Sports Medicine', 'Injury Prevention', 'Physical Therapy', 'Sports Psychology', 'Coaching',
+      'Team Sports', 'Individual Sports', 'Water Sports', 'Winter Sports', 'Extreme Sports',
+      'Adventure Sports', 'Outdoor Activities', 'Nature', 'Wilderness', 'Trail Running',
+      'Rock Climbing', 'Mountain Biking', 'Kayaking', 'Canoeing', 'Rafting', 'Paragliding',
+      'Skydiving', 'Bungee Jumping', 'Base Jumping', 'Free Climbing', 'Ice Climbing'
+    ],
+    'pets': [
+      'Dogs', 'Cats', 'Puppies', 'Kittens', 'Pet Care', 'Pet Training', 'Pet Grooming',
+      'Pet Food', 'Pet Toys', 'Pet Accessories', 'Pet Health', 'Veterinary', 'Pet Adoption',
+      'Pet Rescue', 'Pet Insurance', 'Pet Sitting', 'Pet Walking', 'Pet Boarding',
+      'Dog Breeds', 'Cat Breeds', 'Golden Retriever', 'Labrador', 'German Shepherd', 'French Bulldog',
+      'Poodle', 'Beagle', 'Rottweiler', 'Siberian Husky', 'Border Collie', 'Chihuahua',
+      'Persian Cat', 'Maine Coon', 'British Shorthair', 'Ragdoll', 'Siamese', 'Sphynx',
+      'Scottish Fold', 'American Shorthair', 'Abyssinian', 'Bengal', 'Russian Blue',
+      'Pet Supplies', 'Dog Leash', 'Cat Litter', 'Pet Bed', 'Pet Carrier', 'Pet Crate',
+      'Pet Collar', 'Pet Tag', 'Pet ID', 'Microchip', 'Pet Vaccination', 'Pet Medication',
+      'Pet Surgery', 'Pet Emergency', 'Pet First Aid', 'Pet Behavior', 'Pet Psychology',
+      'Pet Nutrition', 'Raw Diet', 'Grain Free', 'Organic Pet Food', 'Pet Treats',
+      'Pet Dental Care', 'Pet Oral Health', 'Pet Grooming Tools', 'Pet Shampoo', 'Pet Brush',
+      'Pet Nail Clipper', 'Pet Toothbrush', 'Pet Dental Chews', 'Pet Vitamins', 'Pet Supplements',
+      'Pet Anxiety', 'Pet Stress', 'Pet Depression', 'Pet Separation Anxiety', 'Pet Aggression',
+      'Pet Socialization', 'Pet Obedience', 'Pet Tricks', 'Pet Commands', 'Pet Clicker Training',
+      'Pet Positive Reinforcement', 'Pet Crate Training', 'Pet Potty Training', 'Pet House Training'
+    ],
+    'household_products': [
+      'Cleaning Supplies', 'Laundry Detergent', 'Dish Soap', 'All Purpose Cleaner', 'Glass Cleaner',
+      'Floor Cleaner', 'Bathroom Cleaner', 'Kitchen Cleaner', 'Disinfectant', 'Sanitizer',
+      'Paper Towels', 'Toilet Paper', 'Tissues', 'Napkins', 'Trash Bags', 'Storage Bags',
+      'Ziploc Bags', 'Aluminum Foil', 'Plastic Wrap', 'Parchment Paper', 'Wax Paper',
+      'Kitchen Utensils', 'Cooking Tools', 'Baking Supplies', 'Measuring Cups', 'Measuring Spoons',
+      'Mixing Bowls', 'Cutting Boards', 'Knives', 'Can Opener', 'Bottle Opener', 'Peeler',
+      'Grater', 'Strainer', 'Colander', 'Spatula', 'Whisk', 'Tongs', 'Ladle', 'Spoon',
+      'Fork', 'Chopsticks', 'Plates', 'Bowls', 'Cups', 'Mugs', 'Glasses', 'Silverware',
+      'Dinnerware', 'Serveware', 'Tableware', 'Kitchen Appliances', 'Blender', 'Food Processor',
+      'Mixer', 'Toaster', 'Coffee Maker', 'Kettle', 'Microwave', 'Oven', 'Stove', 'Refrigerator',
+      'Dishwasher', 'Washing Machine', 'Dryer', 'Vacuum Cleaner', 'Iron', 'Steamer',
+      'Air Purifier', 'Humidifier', 'Dehumidifier', 'Fan', 'Heater', 'Air Conditioner',
+      'Lighting', 'Lamps', 'Bulbs', 'Candles', 'Flashlights', 'Batteries', 'Extension Cords',
+      'Power Strips', 'Surge Protectors', 'Home Security', 'Locks', 'Keys', 'Doorbell',
+      'Security Cameras', 'Alarm System', 'Smoke Detector', 'Carbon Monoxide Detector',
+      'Fire Extinguisher', 'First Aid Kit', 'Emergency Kit', 'Tool Kit', 'Hardware',
+      'Screws', 'Nails', 'Bolts', 'Nuts', 'Washers', 'Hooks', 'Brackets', 'Hinges',
+      'Handles', 'Knobs', 'Drawer Slides', 'Cabinet Hardware', 'Door Hardware', 'Window Hardware'
     ]
   };
 
@@ -141,6 +194,7 @@ function generateRealTrendKeywords(country: string, category_key: string): strin
     if (country === 'UK') return `${keyword} UK`;
     if (country === 'FR') return `${keyword} France`;
     if (country === 'DE') return `${keyword} Germany`;
+    if (country === 'JP') return `${keyword} Japan`;
     return keyword;
   });
 
@@ -179,6 +233,13 @@ function generateTopRegions(country: string) {
       { region: 'Switzerland', score: 323 },
       { region: 'Netherlands', score: 315 },
       { region: 'Belgium', score: 311 }
+    ],
+    'JP': [
+      { region: 'Japan', score: 453 },
+      { region: 'South Korea', score: 348 },
+      { region: 'China', score: 323 },
+      { region: 'Taiwan', score: 315 },
+      { region: 'Hong Kong', score: 311 }
     ]
   };
   
@@ -215,6 +276,27 @@ function generateRelatedInterests(category_key: string) {
       { interest: 'Restaurants', score: 108 },
       { interest: 'Coffee', score: 107 },
       { interest: 'Desserts', score: 112 }
+    ],
+    'sports_outdoor': [
+      { interest: 'Sports', score: 276 },
+      { interest: 'Fitness', score: 121 },
+      { interest: 'Outdoor Activities', score: 108 },
+      { interest: 'Athletics', score: 107 },
+      { interest: 'Adventure', score: 112 }
+    ],
+    'pets': [
+      { interest: 'Pet Care', score: 276 },
+      { interest: 'Dogs', score: 121 },
+      { interest: 'Cats', score: 108 },
+      { interest: 'Pet Training', score: 107 },
+      { interest: 'Pet Health', score: 112 }
+    ],
+    'household_products': [
+      { interest: 'Home Improvement', score: 276 },
+      { interest: 'Cleaning', score: 121 },
+      { interest: 'Kitchen', score: 108 },
+      { interest: 'Organization', score: 107 },
+      { interest: 'Appliances', score: 112 }
     ]
   };
   
@@ -412,6 +494,132 @@ function generateRelatedVideos(keyword: string, category_key: string) {
         likes: Math.floor(Math.random() * 35000) + 3500,
         duration: '6:15',
         thumbnail: 'https://picsum.photos/300/400?random=20'
+      }
+    ],
+    'sports_outdoor': [
+      {
+        title: `${keyword} Workout Routine`,
+        creator: 'FitnessGuru',
+        views: Math.floor(Math.random() * 1500000) + 150000,
+        likes: Math.floor(Math.random() * 75000) + 7500,
+        duration: '8:30',
+        thumbnail: 'https://picsum.photos/300/400?random=21'
+      },
+      {
+        title: `${keyword} Outdoor Adventure`,
+        creator: 'AdventureSeeker',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '6:45',
+        thumbnail: 'https://picsum.photos/300/400?random=22'
+      },
+      {
+        title: `${keyword} Sports Tips`,
+        creator: 'SportsCoach',
+        views: Math.floor(Math.random() * 1000000) + 100000,
+        likes: Math.floor(Math.random() * 50000) + 5000,
+        duration: '4:20',
+        thumbnail: 'https://picsum.photos/300/400?random=23'
+      },
+      {
+        title: `${keyword} Training Guide`,
+        creator: 'TrainerPro',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '7:15',
+        thumbnail: 'https://picsum.photos/300/400?random=24'
+      },
+      {
+        title: `${keyword} Equipment Review`,
+        creator: 'GearReviewer',
+        views: Math.floor(Math.random() * 600000) + 60000,
+        likes: Math.floor(Math.random() * 30000) + 3000,
+        duration: '5:50',
+        thumbnail: 'https://picsum.photos/300/400?random=25'
+      }
+    ],
+    'pets': [
+      {
+        title: `${keyword} Pet Care Tips`,
+        creator: 'PetExpert',
+        views: Math.floor(Math.random() * 2000000) + 200000,
+        likes: Math.floor(Math.random() * 100000) + 10000,
+        duration: '9:30',
+        thumbnail: 'https://picsum.photos/300/400?random=26'
+      },
+      {
+        title: `${keyword} Training Tutorial`,
+        creator: 'PetTrainer',
+        views: Math.floor(Math.random() * 1500000) + 150000,
+        likes: Math.floor(Math.random() * 75000) + 7500,
+        duration: '12:45',
+        thumbnail: 'https://picsum.photos/300/400?random=27'
+      },
+      {
+        title: `${keyword} Cute Moments`,
+        creator: 'PetLover',
+        views: Math.floor(Math.random() * 1800000) + 180000,
+        likes: Math.floor(Math.random() * 90000) + 9000,
+        duration: '3:20',
+        thumbnail: 'https://picsum.photos/300/400?random=28'
+      },
+      {
+        title: `${keyword} Health Guide`,
+        creator: 'VetTips',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '8:15',
+        thumbnail: 'https://picsum.photos/300/400?random=29'
+      },
+      {
+        title: `${keyword} Fun Activities`,
+        creator: 'PetPlaytime',
+        views: Math.floor(Math.random() * 1000000) + 100000,
+        likes: Math.floor(Math.random() * 50000) + 5000,
+        duration: '6:30',
+        thumbnail: 'https://picsum.photos/300/400?random=30'
+      }
+    ],
+    'household_products': [
+      {
+        title: `${keyword} Cleaning Hacks`,
+        creator: 'CleanExpert',
+        views: Math.floor(Math.random() * 1600000) + 160000,
+        likes: Math.floor(Math.random() * 80000) + 8000,
+        duration: '7:45',
+        thumbnail: 'https://picsum.photos/300/400?random=31'
+      },
+      {
+        title: `${keyword} Organization Tips`,
+        creator: 'OrganizePro',
+        views: Math.floor(Math.random() * 1400000) + 140000,
+        likes: Math.floor(Math.random() * 70000) + 7000,
+        duration: '10:20',
+        thumbnail: 'https://picsum.photos/300/400?random=32'
+      },
+      {
+        title: `${keyword} Kitchen Essentials`,
+        creator: 'KitchenGuru',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '6:15',
+        thumbnail: 'https://picsum.photos/300/400?random=33'
+      },
+      {
+        title: `${keyword} Home Improvement`,
+        creator: 'DIYMaster',
+        views: Math.floor(Math.random() * 1000000) + 100000,
+        likes: Math.floor(Math.random() * 50000) + 5000,
+        duration: '15:30',
+        thumbnail: 'https://picsum.photos/300/400?random=34'
+      },
+      {
+        title: `${keyword} Product Review`,
+        creator: 'HomeReviewer',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '5:45',
+        thumbnail: 'https://picsum.photos/300/400?random=35'
       }
     ]
   };

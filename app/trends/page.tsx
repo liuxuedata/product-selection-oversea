@@ -24,10 +24,13 @@ type ApiResp = {
   rows: TrendRow[];
 };
 
-const COUNTRIES = ["US", "UK", "FR", "DE"] as const;
+const COUNTRIES = ["US", "UK", "FR", "DE", "JP"] as const;
 const CATEGORIES = [
   { key: "tech_electronics", label: "Tech & Electronics" },
   { key: "vehicle_transportation", label: "Vehicle & Transportation" },
+  { key: "sports_outdoor", label: "Sports & Outdoor" },
+  { key: "pets", label: "Pets" },
+  { key: "household_products", label: "Household Products" },
 ] as const;
 const WINDOWS = ["1d", "7d", "30d"] as const;
 const SORTS = [
