@@ -33,5 +33,8 @@ jobs:
         env:
           PG_DSN: ${{ env.PG_DSN_POOL }}
           TTC_STATE_FILE: ${{ github.workspace }}/tiktok_state.json
+          MARKETS: "US,UK,FR,DE"
+          CATEGORIES: "tech_electronics,vehicle_transportation"
+          WINDOWS: "7d,30d"
         run: |
           npx ts-node scripts/fetch_tiktok_trends.ts

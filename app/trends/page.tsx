@@ -24,10 +24,13 @@ type ApiResp = {
   rows: TrendRow[];
 };
 
-const COUNTRIES = ["US", "UK", "FR", "DE"] as const;
+const COUNTRIES = ["US", "UK", "FR", "DE", "JP"] as const;
 const CATEGORIES = [
   { key: "tech_electronics", label: "Tech & Electronics" },
   { key: "vehicle_transportation", label: "Vehicle & Transportation" },
+  { key: "sports_outdoor", label: "Sports & Outdoor" },
+  { key: "pets", label: "Pets" },
+  { key: "household_products", label: "Household Products" },
 ] as const;
 const WINDOWS = ["1d", "7d", "30d"] as const;
 const SORTS = [
@@ -40,18 +43,43 @@ export default function TrendsPage() {
   const [rows, setRows] = useState<TrendRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     source_id: "all" as "all" | "tiktok_trends" | "google_trends",
     country: "US",
     category_key: "tech_electronics",
     window_period: "7d",
-    sort: "collected_at_desc", // rank_asc | score_desc
+    sort: "rank_asc", // 默认按排名正序排序
     mode: "latest" as "latest" | "all",
   });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
+
+  // 排序功能
+  const handleSort = (sortField: 'rank' | 'score') => {
+    const currentSort = filters.sort;
+    let newSort: string;
+    
+    if (sortField === 'rank') {
+      if (currentSort === 'rank_asc') {
+        newSort = 'rank_desc';
+      } else {
+        newSort = 'rank_asc';
+      }
+    } else if (sortField === 'score') {
+      if (currentSort === 'score_desc') {
+        newSort = 'score_asc';
+      } else {
+        newSort = 'score_desc';
+      }
+    } else {
+      newSort = 'rank_asc';
+    }
+    
+    setFilters({ ...filters, sort: newSort as any });
+  };
 
   const searchQS = useMemo(() => {
     const params = new URLSearchParams();
@@ -139,10 +167,12 @@ export default function TrendsPage() {
       });
       const r = await fetch(`/api/jobs/fetch-tiktok?${qs.toString()}`, { cache: "no-store" });
       const j = await r.json();
-      alert(`TikTok 采集完成: ${JSON.stringify(j)}`);
+      setStatusMessage(`✅ TikTok 采集完成: ${j.trendsCount || 0} 条数据`);
       fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
     } catch (e: any) {
-      alert(`TikTok 采集失败: ${e?.message || e}`);
+      setStatusMessage(`❌ TikTok 采集失败: ${e?.message || e}`);
     } finally {
       setCollectingTT(false);
     }
@@ -158,10 +188,12 @@ export default function TrendsPage() {
       });
       const r = await fetch(`/api/jobs/fetch-google?${qs.toString()}`, { cache: "no-store" });
       const j = await r.json();
-      alert(`Google 采集完成: ${JSON.stringify(j)}`);
+      setStatusMessage(`✅ Google 采集完成: ${j.trendsCount || 0} 条数据`);
       fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
     } catch (e: any) {
-      alert(`Google 采集失败: ${e?.message || e}`);
+      setStatusMessage(`❌ Google 采集失败: ${e?.message || e}`);
     } finally {
       setCollectingGG(false);
     }
@@ -170,6 +202,17 @@ export default function TrendsPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold">趋势看板</h1>
+      
+      {/* 状态栏 */}
+      {statusMessage && (
+        <div className={`p-3 rounded-md ${
+          statusMessage.includes('✅') 
+            ? 'bg-green-50 text-green-800 border border-green-200' 
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
+          {statusMessage}
+        </div>
+      )}
 
       {/* 筛选条 */}
       <div className="flex flex-wrap items-end gap-3">
@@ -334,9 +377,19 @@ export default function TrendsPage() {
                 <Th>国家</Th>
                 <Th>类目</Th>
                 <Th>窗口</Th>
-                <Th>排名</Th>
+                <Th 
+                  className="cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('rank')}
+                >
+                  排名 {filters.sort === 'rank_asc' ? '↑' : filters.sort === 'rank_desc' ? '↓' : ''}
+                </Th>
                 <Th>关键词</Th>
-                <Th>得分</Th>
+                <Th 
+                  className="cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('score')}
+                >
+                  得分 {filters.sort === 'score_desc' ? '↓' : filters.sort === 'score_asc' ? '↑' : ''}
+                </Th>
                 <Th>采集时间</Th>
               </tr>
             </thead>
