@@ -135,23 +135,33 @@ async function handle(req: Request) {
     
     // 1. 获取trending searches
     try {
+      console.log(`Fetching trending searches for country: ${country}`);
       const trending = await gtrends.trendingSearches({ geo: country });
+      console.log('Trending searches response:', trending.substring(0, 500) + '...');
+      
       const obj = JSON.parse(trending);
       const arr = obj?.default?.trendingSearchesDays?.[0]?.trendingSearches ?? [];
+      console.log(`Found ${arr.length} trending searches`);
+      
       for (const it of arr) {
         const kw = it?.title?.query;
-        if (kw && typeof kw === "string") items.push(kw.trim());
+        if (kw && typeof kw === "string") {
+          items.push(kw.trim());
+          console.log(`Added trending keyword: ${kw.trim()}`);
+        }
       }
     } catch (e) {
-      console.log('Failed to get trending searches:', e);
+      console.error('Failed to get trending searches:', e);
     }
     
     // 2. 根据类目添加相关关键词
     const categoryKeywords = getCategoryKeywords(category_key, country);
+    console.log(`Adding ${categoryKeywords.length} category keywords for ${category_key}`);
     items.push(...categoryKeywords);
     
     // 去重并限制数量
     const uniqueItems = Array.from(new Set(items)).slice(0, 50);
+    console.log(`Total unique keywords to process: ${uniqueItems.length}`);
 
     const now = Date.now();
     const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
@@ -162,19 +172,26 @@ async function handle(req: Request) {
     
     for (const kw of uniqueItems) {
       try {
+        console.log(`Processing keyword: ${kw} for ${country}`);
         const res = await gtrends.interestOverTime({
           keyword: kw,
           startTime,
           endTime: new Date(),
           geo: country,
         });
+        
+        console.log(`Interest over time response for "${kw}":`, res.substring(0, 300) + '...');
         const j = JSON.parse(res);
         const vals = j?.default?.timelineData ?? [];
+        console.log(`Found ${vals.length} data points for "${kw}"`);
+        
         const last = vals.length ? vals[vals.length - 1] : null;
         const score = last ? Number(last.value?.[0] ?? 0) : null;
+        console.log(`Score for "${kw}": ${score}`);
 
         // 计算排名（基于分数）
         const rank = score ? Math.max(1, Math.min(100, Math.round(100 - (score / 100) * 99))) : null;
+        console.log(`Calculated rank for "${kw}": ${rank}`);
         
         // 使用 upsert 而不是 on conflict do nothing，确保数据更新
         const result = await client.query(
@@ -216,8 +233,10 @@ async function handle(req: Request) {
         
         if (result.rows.length > 0) {
           ok++;
+          console.log(`Successfully inserted/updated "${kw}" with rank ${rank}, score ${score}`);
         } else {
           skipped++;
+          console.log(`Skipped "${kw}" - no rows affected`);
         }
       } catch (e: any) {
         fail++;
