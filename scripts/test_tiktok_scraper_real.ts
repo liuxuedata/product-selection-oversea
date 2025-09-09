@@ -5,7 +5,7 @@
  * 用于测试真实的TikTok Creative Center爬虫功能
  */
 
-import { TikTokTrendsScraper } from './fetch_tiktok_trends';
+import TikTokTrendsScraper from './fetch_tiktok_trends';
 
 async function testTikTokScraper() {
   console.log('🧪 开始测试TikTok爬虫...');
