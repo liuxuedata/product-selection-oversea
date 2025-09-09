@@ -52,10 +52,10 @@ export default function TrendKeywordDetail() {
         queryParams.set('limit', '100');
         
         // 添加筛选参数
-        const source_id = searchParams.get('source_id');
-        const country = searchParams.get('country');
-        const category_key = searchParams.get('category_key');
-        const window_period = searchParams.get('window_period');
+        const source_id = searchParams?.get('source_id');
+        const country = searchParams?.get('country');
+        const category_key = searchParams?.get('category_key');
+        const window_period = searchParams?.get('window_period');
         
         if (source_id && source_id !== 'all') queryParams.set('source_id', source_id);
         if (country) queryParams.set('country', country);
