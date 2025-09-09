@@ -40,6 +40,7 @@ export default function TrendsPage() {
   const [rows, setRows] = useState<TrendRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     source_id: "all" as "all" | "tiktok_trends" | "google_trends",
@@ -139,10 +140,12 @@ export default function TrendsPage() {
       });
       const r = await fetch(`/api/jobs/fetch-tiktok?${qs.toString()}`, { cache: "no-store" });
       const j = await r.json();
-      alert(`TikTok 采集完成: ${JSON.stringify(j)}`);
+      setStatusMessage(`✅ TikTok 采集完成: ${j.trendsCount || 0} 条数据`);
       fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
     } catch (e: any) {
-      alert(`TikTok 采集失败: ${e?.message || e}`);
+      setStatusMessage(`❌ TikTok 采集失败: ${e?.message || e}`);
     } finally {
       setCollectingTT(false);
     }
@@ -158,10 +161,12 @@ export default function TrendsPage() {
       });
       const r = await fetch(`/api/jobs/fetch-google?${qs.toString()}`, { cache: "no-store" });
       const j = await r.json();
-      alert(`Google 采集完成: ${JSON.stringify(j)}`);
+      setStatusMessage(`✅ Google 采集完成: ${j.trendsCount || 0} 条数据`);
       fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
     } catch (e: any) {
-      alert(`Google 采集失败: ${e?.message || e}`);
+      setStatusMessage(`❌ Google 采集失败: ${e?.message || e}`);
     } finally {
       setCollectingGG(false);
     }
@@ -170,6 +175,17 @@ export default function TrendsPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold">趋势看板</h1>
+      
+      {/* 状态栏 */}
+      {statusMessage && (
+        <div className={`p-3 rounded-md ${
+          statusMessage.includes('✅') 
+            ? 'bg-green-50 text-green-800 border border-green-200' 
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
+          {statusMessage}
+        </div>
+      )}
 
       {/* 筛选条 */}
       <div className="flex flex-wrap items-end gap-3">
