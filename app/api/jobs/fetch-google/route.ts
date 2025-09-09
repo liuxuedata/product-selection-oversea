@@ -157,7 +157,9 @@ async function handle(req: Request) {
     const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
     const startTime = new Date(now - spanMs);
 
-    let ok = 0, fail = 0;
+    let ok = 0, fail = 0, skipped = 0;
+    const errors: string[] = [];
+    
     for (const kw of uniqueItems) {
       try {
         const res = await gtrends.interestOverTime({
@@ -174,12 +176,19 @@ async function handle(req: Request) {
         // 计算排名（基于分数）
         const rank = score ? Math.max(1, Math.min(100, Math.round(100 - (score / 100) * 99))) : null;
         
-        await client.query(
+        // 使用 upsert 而不是 on conflict do nothing，确保数据更新
+        const result = await client.query(
           `insert into trend_raw
             (source_id, country, category_key, window_period, keyword, rank, raw_score, meta_json, collected_at)
            values
             ($1,$2,$3,$4,$5,$6,$7,$8::jsonb, now())
-           on conflict do nothing`,
+           on conflict (source_id, country, category_key, window_period, keyword) 
+           do update set 
+             rank = excluded.rank,
+             raw_score = excluded.raw_score,
+             meta_json = excluded.meta_json,
+             collected_at = excluded.collected_at
+           returning id`,
           [
             "google_trends",
             country,
@@ -197,13 +206,23 @@ async function handle(req: Request) {
                 end: new Date().toISOString()
               },
               geo: country,
-              category: category_key
+              category: category_key,
+              keyword: kw,
+              score: score,
+              rank: rank
             }),
           ]
         );
-        ok++;
-      } catch {
+        
+        if (result.rows.length > 0) {
+          ok++;
+        } else {
+          skipped++;
+        }
+      } catch (e: any) {
         fail++;
+        errors.push(`${kw}: ${e?.message || e}`);
+        console.error(`Failed to process keyword "${kw}":`, e);
       }
     }
 
@@ -211,14 +230,16 @@ async function handle(req: Request) {
     return NextResponse.json({ 
       ok: true, 
       trendsCount: ok,
-      message: `成功采集 ${ok} 条Google Trends数据`,
+      message: `成功采集 ${ok} 条Google Trends数据 (跳过 ${skipped} 条, 失败 ${fail} 条)`,
       inserted: ok, 
+      skipped: skipped,
       failed: fail, 
       country, 
       window_period, 
       category_key,
       total_keywords: uniqueItems.length,
-      note: "使用Google Trends API采集真实搜索趋势数据"
+      errors: errors.length > 0 ? errors.slice(0, 5) : undefined, // 只返回前5个错误
+      note: "使用Google Trends API采集真实搜索趋势数据，支持数据更新"
     });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 500 });
