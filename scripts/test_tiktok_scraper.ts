@@ -144,8 +144,7 @@ async function testNetworkConnectivity() {
   for (const url of testUrls) {
     try {
       const response = await fetch(url, { 
-        method: 'HEAD',
-        timeout: 10000 
+        method: 'HEAD'
       });
       console.log(`✅ ${url} - 状态: ${response.status}`);
     } catch (error) {
