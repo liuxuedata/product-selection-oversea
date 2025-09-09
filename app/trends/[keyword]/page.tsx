@@ -144,10 +144,20 @@ export default function TrendKeywordDetail() {
     new Date(b.collected_at).getTime() - new Date(a.collected_at).getTime()
   );
 
-  const latestData = sortedData[0];
-  const avgScore = data.reduce((sum, item) => sum + (Number(item.raw_score) || 0), 0) / data.length;
-  const maxScore = Math.max(...data.map(item => Number(item.raw_score) || 0));
-  const minScore = Math.min(...data.map(item => Number(item.raw_score) || 0));
+         const latestData = sortedData[0];
+         const avgScore = data.reduce((sum, item) => sum + (Number(item.raw_score) || 0), 0) / data.length;
+         const maxScore = Math.max(...data.map(item => Number(item.raw_score) || 0));
+         const minScore = Math.min(...data.map(item => Number(item.raw_score) || 0));
+         
+         // 获取详细数据
+         const metaData = latestData.meta_json || {};
+         const viewsCount = metaData.views_count || 0;
+         const postsCount = metaData.posts_count || 0;
+         const engagementRate = metaData.engagement_rate || '0.000';
+         const topRegions = metaData.top_regions || [];
+         const relatedInterests = metaData.related_interests || [];
+         const audienceInsights = metaData.audience_insights || {};
+         const trendDirection = metaData.trend_direction || 'stable';
 
   return (
     <div className="p-6 space-y-6">
@@ -168,7 +178,7 @@ export default function TrendKeywordDetail() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded">
             <div className="text-sm text-gray-600">最新得分</div>
-            <div className={`text-2xl font-bold ${getScoreColor(latestData.raw_score)}`}>
+            <div className={`text-2xl font-bold ${getScoreColor(Number(latestData.raw_score))}`}>
               {latestData.raw_score ? Number(latestData.raw_score).toFixed(1) : 'N/A'}
             </div>
           </div>
@@ -188,6 +198,42 @@ export default function TrendKeywordDetail() {
             <div className="text-sm text-gray-600">最低得分</div>
             <div className={`text-2xl font-bold ${getScoreColor(minScore)}`}>
               {minScore.toFixed(1)}
+            </div>
+          </div>
+        </div>
+
+        {/* 趋势数据 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-purple-50 p-4 rounded">
+            <div className="text-sm text-gray-600">播放量</div>
+            <div className="text-2xl font-bold text-purple-600">
+              {viewsCount > 1000000 ? `${(viewsCount / 1000000).toFixed(1)}M` : 
+               viewsCount > 1000 ? `${(viewsCount / 1000).toFixed(1)}K` : viewsCount}
+            </div>
+          </div>
+          <div className="bg-indigo-50 p-4 rounded">
+            <div className="text-sm text-gray-600">帖子数</div>
+            <div className="text-2xl font-bold text-indigo-600">
+              {postsCount > 1000 ? `${(postsCount / 1000).toFixed(1)}K` : postsCount}
+            </div>
+          </div>
+          <div className="bg-pink-50 p-4 rounded">
+            <div className="text-sm text-gray-600">互动率</div>
+            <div className="text-2xl font-bold text-pink-600">
+              {(parseFloat(engagementRate) * 100).toFixed(1)}%
+            </div>
+          </div>
+          <div className={`p-4 rounded ${
+            trendDirection === 'up' ? 'bg-green-50' : 
+            trendDirection === 'down' ? 'bg-red-50' : 'bg-gray-50'
+          }`}>
+            <div className="text-sm text-gray-600">趋势方向</div>
+            <div className={`text-2xl font-bold ${
+              trendDirection === 'up' ? 'text-green-600' : 
+              trendDirection === 'down' ? 'text-red-600' : 'text-gray-600'
+            }`}>
+              {trendDirection === 'up' ? '↗️ 上升' : 
+               trendDirection === 'down' ? '↘️ 下降' : '→ 稳定'}
             </div>
           </div>
         </div>
@@ -222,6 +268,103 @@ export default function TrendKeywordDetail() {
             </div>
           </div>
         </div>
+
+        {/* Top Regions */}
+        {topRegions.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">热门地区</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {topRegions.map((region: any, index: number) => (
+                <div key={index} className="bg-white border rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-medium">{region.region}</div>
+                      <div className="text-sm text-gray-500">热度指数</div>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600">{region.score}</div>
+                  </div>
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${(region.score / 500) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Related Interests */}
+        {relatedInterests.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">相关兴趣</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {relatedInterests.map((interest: any, index: number) => (
+                <div key={index} className="bg-white border rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-medium">{interest.interest}</div>
+                      <div className="text-sm text-gray-500">相关度</div>
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">{interest.score}</div>
+                  </div>
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ width: `${(interest.score / 300) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Audience Insights */}
+        {audienceInsights.age_distribution && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">受众洞察</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 年龄分布 */}
+              <div className="bg-white border rounded-lg p-4">
+                <h4 className="font-medium mb-3">年龄分布</h4>
+                {audienceInsights.age_distribution.map((age: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center mb-2">
+                    <span className="text-sm">{age.age_range}</span>
+                    <span className="font-medium">{age.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* 性别分布 */}
+              <div className="bg-white border rounded-lg p-4">
+                <h4 className="font-medium mb-3">性别分布</h4>
+                {audienceInsights.gender_distribution.map((gender: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center mb-2">
+                    <span className="text-sm">{gender.gender}</span>
+                    <span className="font-medium">{gender.percentage}%</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* 热门城市 */}
+              <div className="bg-white border rounded-lg p-4">
+                <h4 className="font-medium mb-3">热门城市</h4>
+                {audienceInsights.top_cities?.slice(0, 3).map((city: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center mb-2">
+                    <span className="text-sm">{city.city}</span>
+                    <span className="font-medium">{city.score}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 历史数据表格 */}

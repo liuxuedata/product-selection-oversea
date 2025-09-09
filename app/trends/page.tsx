@@ -47,12 +47,36 @@ export default function TrendsPage() {
     country: "US",
     category_key: "tech_electronics",
     window_period: "7d",
-    sort: "collected_at_desc", // rank_asc | score_desc
+    sort: "rank_asc", // 默认按排名正序排序
     mode: "latest" as "latest" | "all",
   });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
+
+  // 排序功能
+  const handleSort = (sortField: 'rank' | 'score') => {
+    const currentSort = filters.sort;
+    let newSort: string;
+    
+    if (sortField === 'rank') {
+      if (currentSort === 'rank_asc') {
+        newSort = 'rank_desc';
+      } else {
+        newSort = 'rank_asc';
+      }
+    } else if (sortField === 'score') {
+      if (currentSort === 'score_desc') {
+        newSort = 'score_asc';
+      } else {
+        newSort = 'score_desc';
+      }
+    } else {
+      newSort = 'rank_asc';
+    }
+    
+    setFilters({ ...filters, sort: newSort as any });
+  };
 
   const searchQS = useMemo(() => {
     const params = new URLSearchParams();
@@ -350,9 +374,19 @@ export default function TrendsPage() {
                 <Th>国家</Th>
                 <Th>类目</Th>
                 <Th>窗口</Th>
-                <Th>排名</Th>
+                <Th 
+                  className="cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('rank')}
+                >
+                  排名 {filters.sort === 'rank_asc' ? '↑' : filters.sort === 'rank_desc' ? '↓' : ''}
+                </Th>
                 <Th>关键词</Th>
-                <Th>得分</Th>
+                <Th 
+                  className="cursor-pointer hover:bg-gray-100 select-none"
+                  onClick={() => handleSort('score')}
+                >
+                  得分 {filters.sort === 'score_desc' ? '↓' : filters.sort === 'score_asc' ? '↑' : ''}
+                </Th>
                 <Th>采集时间</Th>
               </tr>
             </thead>

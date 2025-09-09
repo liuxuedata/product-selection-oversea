@@ -8,11 +8,13 @@ export const dynamic = "force-dynamic";
 const SORT_SQL: Record<string, string> = {
   collected_at_desc: "collected_at desc nulls last",
   rank_asc: "rank asc nulls last, collected_at desc",
+  rank_desc: "rank desc nulls last, collected_at desc",
   score_desc: "raw_score desc nulls last, collected_at desc",
+  score_asc: "raw_score asc nulls last, collected_at desc",
 };
 
 function pickSort(sort?: string) {
-  return SORT_SQL[sort || "collected_at_desc"] || SORT_SQL.collected_at_desc;
+  return SORT_SQL[sort || "rank_asc"] || SORT_SQL.rank_asc;
 }
 
 type QS = {
