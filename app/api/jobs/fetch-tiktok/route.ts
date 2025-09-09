@@ -45,7 +45,8 @@ async function fetchRealTikTokTrends(country: string, category_key: string, wind
         top_regions: generateTopRegions(country),
         related_interests: generateRelatedInterests(category_key),
         audience_insights: generateAudienceInsights(),
-        trend_direction: index < 5 ? 'up' : index < 15 ? 'stable' : 'down'
+        trend_direction: index < 5 ? 'up' : index < 15 ? 'stable' : 'down',
+        related_videos: generateRelatedVideos(keyword, category_key)
       }
     };
   });
@@ -73,7 +74,11 @@ function generateRealTrendKeywords(country: string, category_key: string): strin
       'Apple Watch Series 7', 'Tesla Model S Plaid', 'iPhone 5s', 'Samsung Galaxy S7', 'MacBook Pro 15',
       'iPad 5th', 'AirPods 1st', 'Tesla Model X Plaid', 'iPhone 5', 'Samsung Galaxy S6',
       'MacBook Air 11', 'iPad 4th', 'Apple Watch Series 6', 'Tesla Roadster 2020', 'iPhone 4s',
-      'Samsung Galaxy S5', 'MacBook Pro 17', 'iPad 3rd', 'AirPods Max', 'Tesla Cybertruck Tri Motor'
+      'Samsung Galaxy S5', 'MacBook Pro 17', 'iPad 3rd', 'AirPods Max', 'Tesla Cybertruck Tri Motor',
+      'ChatGPT', 'AI', 'Machine Learning', 'Deep Learning', 'Neural Networks', 'OpenAI', 'GPT-4',
+      'Artificial Intelligence', 'Data Science', 'Python', 'JavaScript', 'React', 'Vue.js', 'Node.js',
+      'Cloud Computing', 'AWS', 'Google Cloud', 'Microsoft Azure', 'Docker', 'Kubernetes',
+      'Blockchain', 'Bitcoin', 'Ethereum', 'NFT', 'Web3', 'Metaverse', 'VR', 'AR', 'Mixed Reality'
     ],
     'vehicle_transportation': [
       'Tesla Model Y', 'BMW iX', 'Mercedes EQS', 'Audi e-tron', 'Porsche Taycan', 'Tesla Model 3',
@@ -236,6 +241,182 @@ function generateAudienceInsights() {
       { city: 'Phoenix', score: 311 }
     ]
   };
+}
+
+// 生成相关视频数据
+function generateRelatedVideos(keyword: string, category_key: string) {
+  const baseVideos = {
+    'tech_electronics': [
+      {
+        title: `${keyword} Review - Best Features 2024`,
+        creator: 'TechReviewer',
+        views: Math.floor(Math.random() * 1000000) + 100000,
+        likes: Math.floor(Math.random() * 50000) + 5000,
+        duration: '2:30',
+        thumbnail: 'https://picsum.photos/300/400?random=1'
+      },
+      {
+        title: `Unboxing ${keyword} - First Impressions`,
+        creator: 'UnboxTech',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '3:15',
+        thumbnail: 'https://picsum.photos/300/400?random=2'
+      },
+      {
+        title: `${keyword} vs Competitor - Comparison`,
+        creator: 'TechCompare',
+        views: Math.floor(Math.random() * 600000) + 60000,
+        likes: Math.floor(Math.random() * 30000) + 3000,
+        duration: '4:20',
+        thumbnail: 'https://picsum.photos/300/400?random=3'
+      },
+      {
+        title: `How to Use ${keyword} - Tutorial`,
+        creator: 'TechTutorial',
+        views: Math.floor(Math.random() * 500000) + 50000,
+        likes: Math.floor(Math.random() * 25000) + 2500,
+        duration: '5:45',
+        thumbnail: 'https://picsum.photos/300/400?random=4'
+      },
+      {
+        title: `${keyword} Tips and Tricks`,
+        creator: 'TechTips',
+        views: Math.floor(Math.random() * 400000) + 40000,
+        likes: Math.floor(Math.random() * 20000) + 2000,
+        duration: '2:50',
+        thumbnail: 'https://picsum.photos/300/400?random=5'
+      }
+    ],
+    'vehicle_transportation': [
+      {
+        title: `${keyword} Test Drive Review`,
+        creator: 'CarReviewer',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '6:30',
+        thumbnail: 'https://picsum.photos/300/400?random=6'
+      },
+      {
+        title: `${keyword} Interior Tour`,
+        creator: 'AutoTour',
+        views: Math.floor(Math.random() * 900000) + 90000,
+        likes: Math.floor(Math.random() * 45000) + 4500,
+        duration: '4:15',
+        thumbnail: 'https://picsum.photos/300/400?random=7'
+      },
+      {
+        title: `${keyword} Performance Test`,
+        creator: 'SpeedTest',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '3:45',
+        thumbnail: 'https://picsum.photos/300/400?random=8'
+      },
+      {
+        title: `${keyword} Price Analysis`,
+        creator: 'CarPrice',
+        views: Math.floor(Math.random() * 700000) + 70000,
+        likes: Math.floor(Math.random() * 35000) + 3500,
+        duration: '5:20',
+        thumbnail: 'https://picsum.photos/300/400?random=9'
+      },
+      {
+        title: `${keyword} Maintenance Guide`,
+        creator: 'CarCare',
+        views: Math.floor(Math.random() * 600000) + 60000,
+        likes: Math.floor(Math.random() * 30000) + 3000,
+        duration: '7:10',
+        thumbnail: 'https://picsum.photos/300/400?random=10'
+      }
+    ],
+    'fashion_beauty': [
+      {
+        title: `${keyword} Outfit Ideas`,
+        creator: 'FashionStyle',
+        views: Math.floor(Math.random() * 1500000) + 150000,
+        likes: Math.floor(Math.random() * 75000) + 7500,
+        duration: '3:20',
+        thumbnail: 'https://picsum.photos/300/400?random=11'
+      },
+      {
+        title: `${keyword} Makeup Tutorial`,
+        creator: 'BeautyGuru',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '8:45',
+        thumbnail: 'https://picsum.photos/300/400?random=12'
+      },
+      {
+        title: `${keyword} Haul & Review`,
+        creator: 'FashionHaul',
+        views: Math.floor(Math.random() * 1000000) + 100000,
+        likes: Math.floor(Math.random() * 50000) + 5000,
+        duration: '6:30',
+        thumbnail: 'https://picsum.photos/300/400?random=13'
+      },
+      {
+        title: `${keyword} Styling Tips`,
+        creator: 'StyleTips',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '4:15',
+        thumbnail: 'https://picsum.photos/300/400?random=14'
+      },
+      {
+        title: `${keyword} Trend Alert`,
+        creator: 'TrendSpotter',
+        views: Math.floor(Math.random() * 900000) + 90000,
+        likes: Math.floor(Math.random() * 45000) + 4500,
+        duration: '2:50',
+        thumbnail: 'https://picsum.photos/300/400?random=15'
+      }
+    ],
+    'food_beverage': [
+      {
+        title: `${keyword} Recipe Tutorial`,
+        creator: 'ChefMaster',
+        views: Math.floor(Math.random() * 1800000) + 180000,
+        likes: Math.floor(Math.random() * 90000) + 9000,
+        duration: '10:30',
+        thumbnail: 'https://picsum.photos/300/400?random=16'
+      },
+      {
+        title: `${keyword} Taste Test`,
+        creator: 'FoodTester',
+        views: Math.floor(Math.random() * 1200000) + 120000,
+        likes: Math.floor(Math.random() * 60000) + 6000,
+        duration: '5:45',
+        thumbnail: 'https://picsum.photos/300/400?random=17'
+      },
+      {
+        title: `${keyword} Restaurant Review`,
+        creator: 'FoodCritic',
+        views: Math.floor(Math.random() * 800000) + 80000,
+        likes: Math.floor(Math.random() * 40000) + 4000,
+        duration: '7:20',
+        thumbnail: 'https://picsum.photos/300/400?random=18'
+      },
+      {
+        title: `${keyword} Cooking Tips`,
+        creator: 'CookingTips',
+        views: Math.floor(Math.random() * 600000) + 60000,
+        likes: Math.floor(Math.random() * 30000) + 3000,
+        duration: '4:50',
+        thumbnail: 'https://picsum.photos/300/400?random=19'
+      },
+      {
+        title: `${keyword} Health Benefits`,
+        creator: 'HealthFood',
+        views: Math.floor(Math.random() * 700000) + 70000,
+        likes: Math.floor(Math.random() * 35000) + 3500,
+        duration: '6:15',
+        thumbnail: 'https://picsum.photos/300/400?random=20'
+      }
+    ]
+  };
+  
+  return baseVideos[category_key as keyof typeof baseVideos] || baseVideos['tech_electronics'];
 }
 
 export async function GET(req: Request) {

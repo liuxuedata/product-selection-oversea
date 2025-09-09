@@ -30,6 +30,9 @@ export default function TrendKeywordDetail() {
   const [data, setData] = useState<TrendDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
   
   // 检查参数有效性
   const keyword = params?.keyword ? decodeURIComponent(params.keyword as string) : null;
@@ -67,6 +70,7 @@ export default function TrendKeywordDetail() {
         
         if (result.ok) {
           setData(result.rows);
+          setTotalPages(Math.ceil(result.rows.length / itemsPerPage));
         } else {
           setError('数据加载失败');
         }
@@ -158,6 +162,16 @@ export default function TrendKeywordDetail() {
          const relatedInterests = metaData.related_interests || [];
          const audienceInsights = metaData.audience_insights || {};
          const trendDirection = metaData.trend_direction || 'stable';
+         const relatedVideos = metaData.related_videos || [];
+
+  // 分页逻辑
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = sortedData.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -365,6 +379,51 @@ export default function TrendKeywordDetail() {
             </div>
           </div>
         )}
+
+        {/* Related Videos */}
+        {relatedVideos.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">相关视频</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedVideos.map((video: any, index: number) => (
+                <div key={index} className="bg-white border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="relative">
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                      {video.duration}
+                    </div>
+                    <div className="absolute top-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded">
+                      🔴 LIVE
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-medium text-sm mb-2 line-clamp-2">{video.title}</h4>
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                      <span>@{video.creator}</span>
+                      <span>{video.views > 1000000 ? `${(video.views / 1000000).toFixed(1)}M` : 
+                             video.views > 1000 ? `${(video.views / 1000).toFixed(1)}K` : video.views} 观看</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>❤️ {video.likes > 1000 ? `${(video.likes / 1000).toFixed(1)}K` : video.likes}</span>
+                      <a 
+                        href={`https://tiktok.com/@${video.creator}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        查看视频 →
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 历史数据表格 */}
@@ -385,8 +444,8 @@ export default function TrendKeywordDetail() {
                 <th className="px-4 py-3 text-left">采集时间</th>
               </tr>
             </thead>
-            <tbody>
-              {sortedData.map((item, index) => (
+                   <tbody>
+                     {paginatedData.map((item, index) => (
                 <tr key={index} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">{item.source_id}</td>
                   <td className="px-4 py-3">{item.country}</td>
@@ -399,10 +458,68 @@ export default function TrendKeywordDetail() {
                   <td className="px-4 py-3">{formatDateTime(item.collected_at)}</td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
+                   </tbody>
+                 </table>
+               </div>
+               
+               {/* 翻页组件 */}
+               {totalPages > 1 && (
+                 <div className="p-4 border-t">
+                   <div className="flex items-center justify-between">
+                     <div className="text-sm text-gray-500">
+                       显示 {startIndex + 1}-{Math.min(endIndex, sortedData.length)} 条，共 {sortedData.length} 条
+                     </div>
+                     <div className="flex items-center space-x-2">
+                       <button
+                         onClick={() => handlePageChange(currentPage - 1)}
+                         disabled={currentPage === 1}
+                         className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                       >
+                         上一页
+                       </button>
+                       
+                       {/* 页码 */}
+                       <div className="flex space-x-1">
+                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                           let pageNum;
+                           if (totalPages <= 5) {
+                             pageNum = i + 1;
+                           } else if (currentPage <= 3) {
+                             pageNum = i + 1;
+                           } else if (currentPage >= totalPages - 2) {
+                             pageNum = totalPages - 4 + i;
+                           } else {
+                             pageNum = currentPage - 2 + i;
+                           }
+                           
+                           return (
+                             <button
+                               key={pageNum}
+                               onClick={() => handlePageChange(pageNum)}
+                               className={`px-3 py-1 text-sm border rounded ${
+                                 currentPage === pageNum
+                                   ? 'bg-blue-600 text-white border-blue-600'
+                                   : 'hover:bg-gray-50'
+                               }`}
+                             >
+                               {pageNum}
+                             </button>
+                           );
+                         })}
+                       </div>
+                       
+                       <button
+                         onClick={() => handlePageChange(currentPage + 1)}
+                         disabled={currentPage === totalPages}
+                         className="px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                       >
+                         下一页
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               )}
+             </div>
+           </div>
+         );
+       }
