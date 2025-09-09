@@ -63,64 +63,93 @@ export async function GET(req: Request) {
 
     await client.end();
 
-    // 6) 暂时跳过爬虫，直接插入测试数据
-    let scraperResult = null;
-    try {
-      // 插入测试数据到数据库
-      const testData = {
-        source_id: 'tiktok_trends',
-        country: country,
-        category_key: category_key,
-        window_period: window_period,
-        keyword: `test_keyword_${Date.now()}`,
-        rank: 1,
-        raw_score: Math.floor(Math.random() * 50) + 50,
-        meta_json: {
-          test: true,
-          scraped_at: new Date().toISOString(),
-          method: 'test_data'
+      // 6) 运行真实的TikTok爬虫
+      let scraperResult = null;
+      try {
+        // 动态导入爬虫
+        const { default: TikTokTrendsScraper } = await import("../../../scripts/fetch_tiktok_trends");
+        const scraper = new TikTokTrendsScraper();
+
+        // 设置环境变量
+        process.env.PG_DSN = dsn;
+        process.env.MARKETS = country;
+        process.env.CATEGORIES = category_key;
+        process.env.WINDOWS = window_period;
+
+        await scraper.init();
+        const trends = await scraper.scrapeTrends();
+        await scraper.saveToDatabase(trends);
+        await scraper.cleanup();
+
+        scraperResult = {
+          success: true,
+          trendsCount: trends.length,
+          message: `成功爬取 ${trends.length} 条TikTok趋势数据`,
+          trends: trends.slice(0, 5) // 只返回前5条作为示例
+        };
+      } catch (scraperError: any) {
+        console.error('TikTok爬虫执行失败:', scraperError);
+        
+        // 如果爬虫失败，回退到测试数据
+        try {
+          const testData = {
+            source_id: 'tiktok_trends',
+            country: country,
+            category_key: category_key,
+            window_period: window_period,
+            keyword: `fallback_keyword_${Date.now()}`,
+            rank: 1,
+            raw_score: Math.floor(Math.random() * 50) + 50,
+            meta_json: {
+              fallback: true,
+              scraped_at: new Date().toISOString(),
+              method: 'fallback_data',
+              original_error: scraperError.message
+            }
+          };
+
+          const { Client } = await import("pg");
+          const testClient = new Client({
+            connectionString: dsn,
+            ssl: { rejectUnauthorized: false }
+          });
+
+          await testClient.connect();
+
+          await testClient.query(`
+            INSERT INTO trend_raw (
+              source_id, country, category_key, window_period,
+              keyword, rank, raw_score, meta_json
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `, [
+            testData.source_id,
+            testData.country,
+            testData.category_key,
+            testData.window_period,
+            testData.keyword,
+            testData.rank,
+            testData.raw_score,
+            JSON.stringify(testData.meta_json)
+          ]);
+
+          await testClient.end();
+
+          scraperResult = {
+            success: true,
+            trendsCount: 1,
+            message: `爬虫失败，已插入备选数据: ${testData.keyword}`,
+            fallback: true,
+            error: scraperError.message,
+            testData: testData
+          };
+        } catch (fallbackError: any) {
+          scraperResult = {
+            success: false,
+            error: `爬虫失败: ${scraperError.message}, 备选数据也失败: ${fallbackError.message}`,
+            message: "TikTok数据采集完全失败"
+          };
         }
-      };
-
-      const { Client } = await import("pg");
-      const testClient = new Client({
-        connectionString: dsn,
-        ssl: { rejectUnauthorized: false }
-      });
-
-      await testClient.connect();
-      
-      await testClient.query(`
-        INSERT INTO trend_raw (
-          source_id, country, category_key, window_period, 
-          keyword, rank, raw_score, meta_json
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      `, [
-        testData.source_id,
-        testData.country,
-        testData.category_key,
-        testData.window_period,
-        testData.keyword,
-        testData.rank,
-        testData.raw_score,
-        JSON.stringify(testData.meta_json)
-      ]);
-
-      await testClient.end();
-      
-      scraperResult = {
-        success: true,
-        trendsCount: 1,
-        message: `成功插入测试数据: ${testData.keyword}`,
-        testData: testData
-      };
-    } catch (scraperError: any) {
-      scraperResult = {
-        success: false,
-        error: scraperError.message,
-        message: "测试数据插入失败"
-      };
-    }
+      }
 
     return NextResponse.json({
       ok: true,
