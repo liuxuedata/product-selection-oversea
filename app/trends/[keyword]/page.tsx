@@ -48,7 +48,7 @@ export default function TrendKeywordDetail() {
         setError(null);
         
         const queryParams = new URLSearchParams();
-        queryParams.set('keyword', keyword);
+        queryParams.set('keyword', keyword!); // 使用非空断言，因为前面已经检查过
         queryParams.set('limit', '100');
         
         // 添加筛选参数
