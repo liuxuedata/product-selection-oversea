@@ -121,7 +121,7 @@ export default function TrendKeywordDetail() {
   if (data.length === 0) {
     return (
       <div className="p-6">
-        <div className="text-gray-500 mb-4">未找到关键词 "{keyword}" 的相关数据</div>
+        <div className="text-gray-500 mb-4">未找到关键词 &quot;{keyword}&quot; 的相关数据</div>
         <Link href="/trends" className="text-blue-600 hover:underline">
           ← 返回趋势列表
         </Link>
