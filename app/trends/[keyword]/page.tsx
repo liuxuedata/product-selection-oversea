@@ -145,9 +145,9 @@ export default function TrendKeywordDetail() {
   );
 
   const latestData = sortedData[0];
-  const avgScore = data.reduce((sum, item) => sum + (item.raw_score || 0), 0) / data.length;
-  const maxScore = Math.max(...data.map(item => item.raw_score || 0));
-  const minScore = Math.min(...data.map(item => item.raw_score || 0));
+  const avgScore = data.reduce((sum, item) => sum + (Number(item.raw_score) || 0), 0) / data.length;
+  const maxScore = Math.max(...data.map(item => Number(item.raw_score) || 0));
+  const minScore = Math.min(...data.map(item => Number(item.raw_score) || 0));
 
   return (
     <div className="p-6 space-y-6">
@@ -169,7 +169,7 @@ export default function TrendKeywordDetail() {
           <div className="bg-blue-50 p-4 rounded">
             <div className="text-sm text-gray-600">最新得分</div>
             <div className={`text-2xl font-bold ${getScoreColor(latestData.raw_score)}`}>
-              {latestData.raw_score?.toFixed(1) || 'N/A'}
+              {latestData.raw_score ? Number(latestData.raw_score).toFixed(1) : 'N/A'}
             </div>
           </div>
           <div className="bg-green-50 p-4 rounded">
@@ -251,7 +251,7 @@ export default function TrendKeywordDetail() {
                   <td className="px-4 py-3">{item.window_period}</td>
                   <td className="px-4 py-3">{item.rank || 'N/A'}</td>
                   <td className={`px-4 py-3 font-medium ${getScoreColor(item.raw_score)}`}>
-                    {item.raw_score?.toFixed(1) || 'N/A'}
+                    {item.raw_score ? Number(item.raw_score).toFixed(1) : 'N/A'}
                   </td>
                   <td className="px-4 py-3">{formatDateTime(item.collected_at)}</td>
                 </tr>
