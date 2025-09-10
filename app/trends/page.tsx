@@ -72,7 +72,15 @@ export default function TrendsPage() {
 
   // 当前活跃的筛选器
   const filters = activeTab === "tiktok" ? tiktokFilters : googleFilters;
-  const setFilters = activeTab === "tiktok" ? setTiktokFilters : setGoogleFilters;
+  
+  // Helper function to update filters
+  const updateFilters = (updates: any) => {
+    if (activeTab === "tiktok") {
+      setTiktokFilters({ ...tiktokFilters, ...updates });
+    } else {
+      setGoogleFilters({ ...googleFilters, ...updates });
+    }
+  };
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -287,7 +295,7 @@ export default function TrendsPage() {
           <label className="text-xs text-gray-500 mb-1">国家</label>
           <select
             value={filters.country}
-            onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+            onChange={(e) => updateFilters({ country: e.target.value })}
             className="border rounded px-2 py-1 min-w-[120px]"
           >
             {COUNTRIES.map((c) => (
@@ -303,7 +311,7 @@ export default function TrendsPage() {
           <label className="text-xs text-gray-500 mb-1">类目</label>
           <select
             value={filters.category_key}
-            onChange={(e) => setFilters({ ...filters, category_key: e.target.value })}
+            onChange={(e) => updateFilters({ category_key: e.target.value })}
             className="border rounded px-2 py-1 min-w-[220px]"
           >
             {getCurrentCategories().map((c) => (
@@ -319,7 +327,7 @@ export default function TrendsPage() {
           <label className="text-xs text-gray-500 mb-1">窗口</label>
           <select
             value={filters.window_period}
-            onChange={(e) => setFilters({ ...filters, window_period: e.target.value })}
+            onChange={(e) => updateFilters({ window_period: e.target.value })}
             className="border rounded px-2 py-1 min-w-[120px]"
           >
             {WINDOWS.map((w) => (
@@ -335,7 +343,7 @@ export default function TrendsPage() {
           <label className="text-xs text-gray-500 mb-1">排序</label>
           <select
             value={filters.sort}
-            onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
+            onChange={(e) => updateFilters({ sort: e.target.value })}
             className="border rounded px-2 py-1 min-w-[200px]"
           >
             {SORTS.map((s) => (
@@ -351,7 +359,7 @@ export default function TrendsPage() {
           <input
             type="checkbox"
             checked={filters.mode === "latest"}
-            onChange={(e) => setFilters({ ...filters, mode: e.target.checked ? "latest" : "all" })}
+            onChange={(e) => updateFilters({ mode: e.target.checked ? "latest" : "all" })}
           />
           <span className="text-sm">只看最新一次</span>
         </label>
