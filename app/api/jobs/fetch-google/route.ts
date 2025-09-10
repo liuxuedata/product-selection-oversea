@@ -190,18 +190,18 @@ async function handle(req: Request) {
         
         console.log(`Generated mock data for "${kw}": score=${score}, rank=${rank}, dataPoints=${dataPoints}`);
         
-        // 使用 upsert 而不是 on conflict do nothing，确保数据更新
+        // 先删除已存在的记录，然后插入新记录
+        await client.query(
+          `delete from trend_raw 
+           where source_id = $1 and country = $2 and category_key = $3 and window_period = $4 and keyword = $5`,
+          ["google_trends", country, category_key, window_period, kw]
+        );
+        
         const result = await client.query(
           `insert into trend_raw
             (source_id, country, category_key, window_period, keyword, rank, raw_score, meta_json, collected_at)
            values
             ($1,$2,$3,$4,$5,$6,$7,$8::jsonb, now())
-           on conflict (source_id, country, category_key, window_period, keyword) 
-           do update set 
-             rank = excluded.rank,
-             raw_score = excluded.raw_score,
-             meta_json = excluded.meta_json,
-             collected_at = excluded.collected_at
            returning id`,
           [
             "google_trends",
