@@ -107,7 +107,7 @@ export default function TrendsPage() {
 
   const searchQS = useMemo(() => {
     const params = new URLSearchParams();
-    if (filters.source_id !== "all") params.set("source_id", filters.source_id);
+    params.set("source_id", filters.source_id);
     params.set("country", filters.country);
     params.set("category_key", filters.category_key);
     params.set("window_period", filters.window_period);
