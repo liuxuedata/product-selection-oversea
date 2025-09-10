@@ -88,13 +88,11 @@ async function handle(req: Request) {
   if (!dsn) return NextResponse.json({ ok: false, error: "Missing PG DSN" }, { status: 500 });
 
   try {
-    const gtrends = await import("google-trends-api");
-    console.log('gtrends module:', Object.keys(gtrends));
-    console.log('gtrends.default:', Object.keys(gtrends.default || {}));
+    // 使用CommonJS方式导入google-trends-api
+    const gtrends = require("google-trends-api");
+    console.log('gtrends module keys:', Object.keys(gtrends));
     
-    // 尝试不同的导入方式
-    const trendingSearches = gtrends.trendingSearches || gtrends.default?.trendingSearches;
-    const interestOverTime = gtrends.interestOverTime || gtrends.default?.interestOverTime;
+    const { trendingSearches, interestOverTime } = gtrends;
     
     if (!trendingSearches || !interestOverTime) {
       console.error('Failed to import google-trends-api functions');
