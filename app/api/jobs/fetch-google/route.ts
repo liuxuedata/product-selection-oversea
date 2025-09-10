@@ -238,7 +238,7 @@ async function handle(req: Request) {
           'discount': 50, 'usa': 45, 'american': 40, 'united states': 35
         };
         
-        const baseScore = keywordPopularity[kw.toLowerCase()] || Math.floor(20 + (random * 60));
+        const baseScore = keywordPopularity[kw.toLowerCase() as keyof typeof keywordPopularity] || Math.floor(20 + (random * 60));
         
         // 添加一些随机波动，模拟真实趋势
         const fluctuation = Math.floor((random - 0.5) * 20); // -10 到 +10 的波动
