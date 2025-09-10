@@ -231,6 +231,31 @@ export default function TrendsPage() {
     }
   }
 
+  async function triggerCollectGoogleHttp() {
+    try {
+      setCollectingGG(true);
+      const qs = new URLSearchParams({
+        country: filters.country,
+        category_key: filters.category_key,
+        window_period: filters.window_period,
+      });
+      const r = await fetch(`/api/jobs/fetch-google-http?${qs.toString()}`, { cache: "no-store" });
+      const j = await r.json();
+      if (j.ok) {
+        setStatusMessage(`✅ Google HTTP数据采集完成: ${j.trendsCount || 0} 条数据`);
+      } else {
+        setStatusMessage(`❌ Google HTTP数据采集失败: ${j.error || '未知错误'}`);
+      }
+      fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (e: any) {
+      setStatusMessage(`❌ Google HTTP数据采集失败: ${e?.message || e}`);
+    } finally {
+      setCollectingGG(false);
+    }
+  }
+
   async function triggerCollectGoogleReal() {
     try {
       setCollectingGG(true);
@@ -242,15 +267,15 @@ export default function TrendsPage() {
       const r = await fetch(`/api/jobs/fetch-google-real?${qs.toString()}`, { cache: "no-store" });
       const j = await r.json();
       if (j.ok) {
-        setStatusMessage(`✅ Google 真实数据采集完成: ${j.trendsCount || 0} 条数据`);
+        setStatusMessage(`✅ Google Playwright数据采集完成: ${j.trendsCount || 0} 条数据`);
       } else {
-        setStatusMessage(`❌ Google 真实数据采集失败: ${j.error || '未知错误'}`);
+        setStatusMessage(`❌ Google Playwright数据采集失败: ${j.error || '未知错误'}`);
       }
       fetchData();
       // 5秒后自动清除状态消息
       setTimeout(() => setStatusMessage(null), 5000);
     } catch (e: any) {
-      setStatusMessage(`❌ Google 真实数据采集失败: ${e?.message || e}`);
+      setStatusMessage(`❌ Google Playwright数据采集失败: ${e?.message || e}`);
     } finally {
       setCollectingGG(false);
     }
@@ -430,7 +455,7 @@ export default function TrendsPage() {
               {collectingTT ? "采集中…" : "手动采集一次（TikTok）"}
             </button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={triggerCollectGoogle}
                 disabled={collectingGG}
@@ -439,11 +464,18 @@ export default function TrendsPage() {
                 {collectingGG ? "采集中…" : "手动采集一次（Google-模拟）"}
               </button>
               <button
+                onClick={triggerCollectGoogleHttp}
+                disabled={collectingGG}
+                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+              >
+                {collectingGG ? "采集中…" : "手动采集一次（Google-HTTP）"}
+              </button>
+              <button
                 onClick={triggerCollectGoogleReal}
                 disabled={collectingGG}
                 className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
-                {collectingGG ? "采集中…" : "手动采集一次（Google-真实）"}
+                {collectingGG ? "采集中…" : "手动采集一次（Google-Playwright）"}
               </button>
             </div>
           )}
