@@ -175,18 +175,26 @@ async function handle(req: Request) {
         let rank = null;
         let dataPoints = 0;
         
-        // 生成基于关键词的模拟数据，保持一致性
+        // 生成更接近真实Google Trends的模拟数据
         const seed = kw.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
         const random = (seed * 9301 + 49297) % 233280 / 233280;
         
-        // 根据关键词类型调整分数范围
-        const isPopularKeyword = ['shopping', 'online shopping', 'ecommerce', 'retail', 'store', 'buy', 'purchase'].includes(kw.toLowerCase());
-        const baseScore = isPopularKeyword ? 60 : 30;
-        const variance = isPopularKeyword ? 30 : 40;
+        // 根据关键词类型和流行度调整分数范围
+        const keywordPopularity = {
+          'shopping': 95, 'online shopping': 90, 'ecommerce': 85, 'retail': 80,
+          'store': 75, 'buy': 70, 'purchase': 65, 'deal': 60, 'sale': 55,
+          'discount': 50, 'usa': 45, 'american': 40, 'united states': 35
+        };
         
-        score = Math.floor(baseScore + (random * variance));
+        const baseScore = keywordPopularity[kw.toLowerCase()] || Math.floor(20 + (random * 60));
+        
+        // 添加一些随机波动，模拟真实趋势
+        const fluctuation = Math.floor((random - 0.5) * 20); // -10 到 +10 的波动
+        score = Math.max(0, Math.min(100, baseScore + fluctuation));
+        
+        // 更真实的排名计算（Google Trends通常显示相对热度）
         rank = Math.max(1, Math.min(100, Math.round(100 - (score / 100) * 99)));
-        dataPoints = Math.floor(20 + (random * 30)); // 模拟20-50个数据点
+        dataPoints = Math.floor(30 + (random * 40)); // 模拟30-70个数据点
         
         console.log(`Generated mock data for "${kw}": score=${score}, rank=${rank}, dataPoints=${dataPoints}`);
         
@@ -256,7 +264,7 @@ async function handle(req: Request) {
       category_key,
       total_keywords: uniqueItems.length,
       errors: errors.length > 0 ? errors.slice(0, 5) : undefined, // 只返回前5个错误
-      note: "使用模拟数据，因为google-trends-api库存在兼容性问题。后续将集成真实的Google Trends数据源。"
+      note: "使用改进的模拟数据，更接近真实Google Trends趋势。后续将集成真实的Google Trends数据源。"
     });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 500 });
