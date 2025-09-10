@@ -119,7 +119,7 @@ async function handle(req: Request) {
     // 1. 获取trending searches
     try {
       console.log(`Fetching trending searches for country: ${country}`);
-      const trending = await gtrends.trendingSearches({ geo: country });
+      const trending = await gtrends.default.trendingSearches({ geo: country });
       console.log('Trending searches response:', trending.substring(0, 500) + '...');
       
       const obj = JSON.parse(trending);
@@ -156,7 +156,7 @@ async function handle(req: Request) {
     for (const kw of uniqueItems) {
       try {
         console.log(`Processing keyword: ${kw} for ${country}`);
-        const res = await gtrends.interestOverTime({
+        const res = await gtrends.default.interestOverTime({
           keyword: kw,
           startTime,
           endTime: new Date(),
