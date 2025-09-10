@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ThHTMLAttributes, TdHTMLAttributes } from "react";
 import Link from "next/link";
+import { getTopLevelCategories, getSubCategories } from "@/lib/google-trends-categories";
 
 type TrendRow = {
   source_id: string;
@@ -25,13 +26,16 @@ type ApiResp = {
 };
 
 const COUNTRIES = ["US", "UK", "FR", "DE", "JP"] as const;
-const CATEGORIES = [
+
+// TikTok 分类
+const TIKTOK_CATEGORIES = [
   { key: "tech_electronics", label: "Tech & Electronics" },
   { key: "vehicle_transportation", label: "Vehicle & Transportation" },
   { key: "sports_outdoor", label: "Sports & Outdoor" },
   { key: "pets", label: "Pets" },
   { key: "household_products", label: "Household Products" },
 ] as const;
+
 const WINDOWS = ["1d", "7d", "30d"] as const;
 const SORTS = [
   { key: "collected_at_desc", label: "按采集时间(新→旧)" },
@@ -40,19 +44,35 @@ const SORTS = [
 ] as const;
 
 export default function TrendsPage() {
+  const [activeTab, setActiveTab] = useState<"tiktok" | "google">("tiktok");
   const [rows, setRows] = useState<TrendRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const [filters, setFilters] = useState({
-    source_id: "all" as "all" | "tiktok_trends" | "google_trends",
+  // TikTok 筛选器
+  const [tiktokFilters, setTiktokFilters] = useState({
+    source_id: "tiktok_trends" as const,
     country: "US",
     category_key: "tech_electronics",
     window_period: "7d",
-    sort: "rank_asc", // 默认按排名正序排序
+    sort: "rank_asc",
     mode: "latest" as "latest" | "all",
   });
+
+  // Google Trends 筛选器
+  const [googleFilters, setGoogleFilters] = useState({
+    source_id: "google_trends" as const,
+    country: "US",
+    category_key: "shopping", // Google Trends 默认分类
+    window_period: "7d",
+    sort: "rank_asc",
+    mode: "latest" as "latest" | "all",
+  });
+
+  // 当前活跃的筛选器
+  const filters = activeTab === "tiktok" ? tiktokFilters : googleFilters;
+  const setFilters = activeTab === "tiktok" ? setTiktokFilters : setGoogleFilters;
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
@@ -199,9 +219,50 @@ export default function TrendsPage() {
     }
   }
 
+  // 获取当前Tab的分类选项
+  const getCurrentCategories = () => {
+    if (activeTab === "tiktok") {
+      return TIKTOK_CATEGORIES;
+    } else {
+      // Google Trends 分类
+      const topLevel = getTopLevelCategories();
+      return topLevel.map(cat => ({
+        key: cat.name,
+        label: cat.displayName,
+        id: cat.id
+      }));
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold">趋势看板</h1>
+      
+      {/* Tab 切换 */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab("tiktok")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "tiktok"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            TikTok Trends
+          </button>
+          <button
+            onClick={() => setActiveTab("google")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "google"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Google Trends
+          </button>
+        </nav>
+      </div>
       
       {/* 状态栏 */}
       {statusMessage && (
@@ -216,19 +277,6 @@ export default function TrendsPage() {
 
       {/* 筛选条 */}
       <div className="flex flex-wrap items-end gap-3">
-        {/* 来源 */}
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-500 mb-1">来源</label>
-          <select
-            value={filters.source_id}
-            onChange={(e) => setFilters({ ...filters, source_id: e.target.value as any })}
-            className="border rounded px-2 py-1 min-w-[160px]"
-          >
-            <option value="all">全部来源</option>
-            <option value="tiktok_trends">TikTok</option>
-            <option value="google_trends">Google</option>
-          </select>
-        </div>
 
         {/* 国家 */}
         <div className="flex flex-col">
@@ -254,7 +302,7 @@ export default function TrendsPage() {
             onChange={(e) => setFilters({ ...filters, category_key: e.target.value })}
             className="border rounded px-2 py-1 min-w-[220px]"
           >
-            {CATEGORIES.map((c) => (
+            {getCurrentCategories().map((c) => (
               <option key={c.key} value={c.key}>
                 {c.label}
               </option>
@@ -309,20 +357,23 @@ export default function TrendsPage() {
           <button onClick={exportCSV} className="px-3 py-1 border rounded hover:bg-gray-50">
             导出当前结果 CSV
           </button>
-          <button
-            onClick={triggerCollectTikTok}
-            disabled={collectingTT}
-            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
-          >
-            {collectingTT ? "采集中…" : "手动采集一次（TikTok）"}
-          </button>
-          <button
-            onClick={triggerCollectGoogle}
-            disabled={collectingGG}
-            className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
-          >
-            {collectingGG ? "采集中…" : "手动采集一次（Google）"}
-          </button>
+          {activeTab === "tiktok" ? (
+            <button
+              onClick={triggerCollectTikTok}
+              disabled={collectingTT}
+              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              {collectingTT ? "采集中…" : "手动采集一次（TikTok）"}
+            </button>
+          ) : (
+            <button
+              onClick={triggerCollectGoogle}
+              disabled={collectingGG}
+              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              {collectingGG ? "采集中…" : "手动采集一次（Google）"}
+            </button>
+          )}
         </div>
       </div>
 

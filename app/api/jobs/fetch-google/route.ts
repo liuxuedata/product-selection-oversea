@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCategoryById, getCategoryByName } from "@/lib/google-trends-categories";
 
 // Vercel/Next
 export const runtime = "nodejs";
@@ -16,70 +17,52 @@ const REGION_MAP: Record<string, { gt: string; ttc: string }> = {
   JP: { gt: "JP", ttc: "JP" },
 };
 
-// 根据类目获取相关关键词
-function getCategoryKeywords(category_key: string, country: string): string[] {
-  const baseKeywords = {
-    'tech_electronics': [
-      'iPhone', 'Samsung', 'Google', 'Apple', 'Microsoft', 'Tesla', 'AI', 'ChatGPT', 'Machine Learning',
-      'Smartphone', 'Laptop', 'Computer', 'Software', 'Hardware', 'Internet', 'Cloud', 'Data',
-      'Artificial Intelligence', 'Robotics', 'Automation', 'Blockchain', 'Cryptocurrency', 'Bitcoin',
-      'Virtual Reality', 'Augmented Reality', '5G', 'WiFi', 'Bluetooth', 'USB', 'Battery', 'Charger'
-    ],
-    'vehicle_transportation': [
-      'Tesla', 'BMW', 'Mercedes', 'Audi', 'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'Hyundai',
-      'Electric Car', 'Hybrid Car', 'SUV', 'Sedan', 'Truck', 'Motorcycle', 'Bicycle', 'Scooter',
-      'Car Insurance', 'Car Loan', 'Car Rental', 'Gas Station', 'Electric Vehicle', 'Autonomous Car',
-      'Car Maintenance', 'Car Repair', 'Car Wash', 'Parking', 'Traffic', 'Highway', 'Road Trip'
-    ],
-    'sports_outdoor': [
-      'Nike', 'Adidas', 'Under Armour', 'Puma', 'New Balance', 'Reebok', 'Converse', 'Vans',
-      'Running', 'Basketball', 'Football', 'Soccer', 'Tennis', 'Golf', 'Baseball', 'Hockey',
-      'Swimming', 'Cycling', 'Hiking', 'Camping', 'Fishing', 'Surfing', 'Snowboarding', 'Skiing',
-      'Gym', 'Workout', 'Fitness', 'Yoga', 'Pilates', 'CrossFit', 'Marathon', 'Triathlon',
-      'Olympics', 'World Cup', 'Championship', 'Tournament', 'Training', 'Exercise', 'Sports'
-    ],
-    'pets': [
-      'Dogs', 'Cats', 'Puppies', 'Kittens', 'Pet Care', 'Pet Training', 'Pet Grooming',
-      'Pet Food', 'Pet Toys', 'Pet Accessories', 'Pet Health', 'Veterinary', 'Pet Adoption',
-      'Pet Rescue', 'Pet Insurance', 'Pet Sitting', 'Pet Walking', 'Pet Boarding',
-      'Dog Breeds', 'Cat Breeds', 'Golden Retriever', 'Labrador', 'German Shepherd', 'French Bulldog',
-      'Poodle', 'Beagle', 'Rottweiler', 'Siberian Husky', 'Border Collie', 'Chihuahua',
-      'Persian Cat', 'Maine Coon', 'British Shorthair', 'Ragdoll', 'Siamese', 'Sphynx'
-    ],
-    'household_products': [
-      'Cleaning Supplies', 'Laundry Detergent', 'Dish Soap', 'All Purpose Cleaner', 'Glass Cleaner',
-      'Floor Cleaner', 'Bathroom Cleaner', 'Kitchen Cleaner', 'Disinfectant', 'Sanitizer',
-      'Paper Towels', 'Toilet Paper', 'Tissues', 'Napkins', 'Trash Bags', 'Storage Bags',
-      'Kitchen Utensils', 'Cooking Tools', 'Baking Supplies', 'Measuring Cups', 'Measuring Spoons',
-      'Mixing Bowls', 'Cutting Boards', 'Knives', 'Can Opener', 'Bottle Opener', 'Peeler',
-      'Kitchen Appliances', 'Blender', 'Food Processor', 'Mixer', 'Toaster', 'Coffee Maker',
-      'Microwave', 'Oven', 'Stove', 'Refrigerator', 'Dishwasher', 'Washing Machine', 'Dryer'
-    ],
-    'fashion_beauty': [
-      'Nike', 'Adidas', 'Gucci', 'Louis Vuitton', 'Chanel', 'Hermès', 'Prada', 'Versace',
-      'Balenciaga', 'Off-White', 'Supreme', 'Yeezy', 'Jordan', 'Converse', 'Vans', 'New Balance',
-      'Fashion', 'Beauty', 'Makeup', 'Skincare', 'Hair Care', 'Perfume', 'Cosmetics',
-      'Clothing', 'Shoes', 'Bags', 'Jewelry', 'Accessories', 'Style', 'Trend', 'Designer'
-    ],
-    'food_beverage': [
-      'Starbucks', 'McDonald\'s', 'KFC', 'Pizza Hut', 'Subway', 'Burger King', 'Taco Bell',
-      'Domino\'s', 'Papa John\'s', 'Chipotle', 'Panera Bread', 'Dunkin\'', 'Tim Hortons',
-      'Coffee', 'Tea', 'Soda', 'Juice', 'Water', 'Beer', 'Wine', 'Cocktail', 'Food',
-      'Restaurant', 'Cooking', 'Recipe', 'Dining', 'Delivery', 'Takeout', 'Fast Food'
-    ]
+// 根据Google Trends分类获取相关关键词
+function getGoogleTrendsKeywords(category_key: string, country: string): string[] {
+  // 获取分类信息
+  const category = getCategoryByName(category_key);
+  if (!category) {
+    console.log(`Unknown category: ${category_key}`);
+    return [];
+  }
+
+  // 根据分类ID生成相关关键词
+  const categoryKeywords: Record<number, string[]> = {
+    // 购物相关
+    23: ['shopping', 'online shopping', 'ecommerce', 'retail', 'store', 'buy', 'purchase', 'deal', 'sale', 'discount'],
+    // 计算机与电子产品
+    6: ['computer', 'laptop', 'smartphone', 'tablet', 'software', 'hardware', 'internet', 'technology', 'digital', 'electronic'],
+    // 汽车与交通工具
+    2: ['car', 'vehicle', 'automobile', 'truck', 'motorcycle', 'bicycle', 'transportation', 'driving', 'road', 'highway'],
+    // 健康
+    10: ['health', 'medical', 'fitness', 'wellness', 'doctor', 'hospital', 'medicine', 'treatment', 'therapy', 'nutrition'],
+    // 体育
+    25: ['sports', 'football', 'basketball', 'soccer', 'tennis', 'golf', 'baseball', 'hockey', 'olympics', 'athletics'],
+    // 旅行
+    26: ['travel', 'trip', 'vacation', 'hotel', 'flight', 'booking', 'destination', 'tourism', 'adventure', 'holiday'],
+    // 美食与饮料
+    8: ['food', 'restaurant', 'cooking', 'recipe', 'dining', 'beverage', 'drink', 'meal', 'cuisine', 'kitchen'],
+    // 美容与健身
+    3: ['beauty', 'makeup', 'skincare', 'fitness', 'gym', 'workout', 'cosmetics', 'hair', 'nail', 'fashion'],
+    // 家居与园艺
+    12: ['home', 'house', 'furniture', 'garden', 'decor', 'appliance', 'kitchen', 'bedroom', 'living room', 'outdoor'],
+    // 宠物与动物
+    19: ['pet', 'dog', 'cat', 'animal', 'veterinary', 'pet care', 'pet food', 'pet training', 'wildlife', 'zoo']
   };
-  
-  const keywords = baseKeywords[category_key as keyof typeof baseKeywords] || baseKeywords['tech_electronics'];
-  
+
   // 根据国家调整关键词
-  return keywords.map(keyword => {
-    if (country === 'US') return keyword;
-    if (country === 'GB') return `${keyword} UK`;
-    if (country === 'FR') return `${keyword} France`;
-    if (country === 'DE') return `${keyword} Germany`;
-    if (country === 'JP') return `${keyword} Japan`;
-    return keyword;
-  });
+  const countryKeywords: Record<string, string[]> = {
+    'US': ['USA', 'American', 'United States'],
+    'GB': ['UK', 'British', 'London', 'Manchester', 'Birmingham'],
+    'FR': ['France', 'French', 'Paris', 'Lyon', 'Marseille'],
+    'DE': ['Germany', 'German', 'Berlin', 'Munich', 'Hamburg'],
+    'JP': ['Japan', 'Japanese', 'Tokyo', 'Osaka', 'Kyoto']
+  };
+
+  const base = categoryKeywords[category.id] || [];
+  const countrySpecific = countryKeywords[country] || [];
+  
+  return [...base, ...countrySpecific];
 }
 
 export async function GET(req: Request) {
@@ -155,7 +138,7 @@ async function handle(req: Request) {
     }
     
     // 2. 根据类目添加相关关键词
-    const categoryKeywords = getCategoryKeywords(category_key, country);
+    const categoryKeywords = getGoogleTrendsKeywords(category_key, country);
     console.log(`Adding ${categoryKeywords.length} category keywords for ${category_key}`);
     items.push(...categoryKeywords);
     
