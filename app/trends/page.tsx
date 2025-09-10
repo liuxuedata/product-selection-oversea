@@ -98,7 +98,11 @@ export default function TrendsPage() {
       newSort = 'rank_asc';
     }
     
-    setFilters({ ...filters, sort: newSort as any });
+    if (activeTab === "tiktok") {
+      setTiktokFilters({ ...tiktokFilters, sort: newSort });
+    } else {
+      setGoogleFilters({ ...googleFilters, sort: newSort });
+    }
   };
 
   const searchQS = useMemo(() => {
