@@ -180,6 +180,7 @@ async function handle(req: Request) {
         
         let score = null;
         let rank = null;
+        let dataPoints = 0;
         
         try {
           const j = JSON.parse(res);
@@ -197,7 +198,8 @@ async function handle(req: Request) {
             vals = j.default;
           }
           
-          console.log(`Found ${vals.length} data points for "${kw}"`);
+          dataPoints = vals.length;
+          console.log(`Found ${dataPoints} data points for "${kw}"`);
           
           if (vals.length > 0) {
             const last = vals[vals.length - 1];
@@ -227,6 +229,7 @@ async function handle(req: Request) {
           // 如果解析失败，生成模拟数据
           score = Math.floor(Math.random() * 100) + 1;
           rank = Math.max(1, Math.min(100, Math.round(100 - (score / 100) * 99)));
+          dataPoints = 0;
           console.log(`Using mock data for "${kw}": score=${score}, rank=${rank}`);
         }
         
@@ -254,7 +257,7 @@ async function handle(req: Request) {
             JSON.stringify({ 
               from: "google_trends_api",
               method: "interest_over_time",
-              data_points: vals.length,
+              data_points: dataPoints,
               time_range: {
                 start: startTime.toISOString(),
                 end: new Date().toISOString()
