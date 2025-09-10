@@ -231,6 +231,31 @@ export default function TrendsPage() {
     }
   }
 
+  async function triggerCollectGoogleReal() {
+    try {
+      setCollectingGG(true);
+      const qs = new URLSearchParams({
+        country: filters.country,
+        category_key: filters.category_key,
+        window_period: filters.window_period,
+      });
+      const r = await fetch(`/api/jobs/fetch-google-real?${qs.toString()}`, { cache: "no-store" });
+      const j = await r.json();
+      if (j.ok) {
+        setStatusMessage(`✅ Google 真实数据采集完成: ${j.trendsCount || 0} 条数据`);
+      } else {
+        setStatusMessage(`❌ Google 真实数据采集失败: ${j.error || '未知错误'}`);
+      }
+      fetchData();
+      // 5秒后自动清除状态消息
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (e: any) {
+      setStatusMessage(`❌ Google 真实数据采集失败: ${e?.message || e}`);
+    } finally {
+      setCollectingGG(false);
+    }
+  }
+
   // 获取当前Tab的分类选项
   const getCurrentCategories = () => {
     if (activeTab === "tiktok") {
@@ -405,13 +430,22 @@ export default function TrendsPage() {
               {collectingTT ? "采集中…" : "手动采集一次（TikTok）"}
             </button>
           ) : (
-            <button
-              onClick={triggerCollectGoogle}
-              disabled={collectingGG}
-              className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              {collectingGG ? "采集中…" : "手动采集一次（Google）"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={triggerCollectGoogle}
+                disabled={collectingGG}
+                className="px-3 py-1 border rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                {collectingGG ? "采集中…" : "手动采集一次（Google-模拟）"}
+              </button>
+              <button
+                onClick={triggerCollectGoogleReal}
+                disabled={collectingGG}
+                className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {collectingGG ? "采集中…" : "手动采集一次（Google-真实）"}
+              </button>
+            </div>
           )}
         </div>
       </div>
