@@ -36,7 +36,7 @@ const TIKTOK_CATEGORIES = [
   { key: "household_products", label: "Household Products" },
 ] as const;
 
-const WINDOWS = ["1d", "7d", "30d"] as const;
+const WINDOWS = ["1d", "7d", "30d", "90d"] as const;
 const SORTS = [
   { key: "collected_at_desc", label: "按采集时间(新→旧)" },
   { key: "rank_asc", label: "按排名(小→大)" },

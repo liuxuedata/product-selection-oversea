@@ -17,6 +17,56 @@ const REGION_MAP: Record<string, { gt: string; ttc: string }> = {
   JP: { gt: "JP", ttc: "JP" },
 };
 
+// 生成相关搜索主题
+function generateRelatedTopics(keyword: string, random: number): Array<{topic: string, rise: number}> {
+  const topicMap: Record<string, string[]> = {
+    'shopping': ['在线购物', '电商平台', '购物网站', '零售业', '消费者行为'],
+    'online shopping': ['电商', '网购', '购物平台', '数字零售', '消费者趋势'],
+    'ecommerce': ['电子商务', '在线销售', '数字商务', '电商平台', '网络零售'],
+    'retail': ['零售业', '实体店', '购物中心', '零售趋势', '消费者市场'],
+    'store': ['商店', '零售店', '购物场所', '实体零售', '店铺管理'],
+    'buy': ['购买', '消费', '购物决策', '购买行为', '消费者心理'],
+    'purchase': ['采购', '购买流程', '消费决策', '购买力', '市场购买'],
+    'deal': ['优惠', '促销', '折扣', '特价', '优惠活动'],
+    'sale': ['销售', '促销活动', '特价销售', '销售趋势', '市场销售'],
+    'discount': ['折扣', '优惠券', '降价', '特价', '促销折扣']
+  };
+  
+  const topics = topicMap[keyword.toLowerCase()] || ['相关主题1', '相关主题2', '相关主题3', '相关主题4', '相关主题5'];
+  const riseValues = [70, 50, 40, 30, 20];
+  
+  return topics.slice(0, 5).map((topic, index) => ({
+    topic,
+    rise: riseValues[index] + Math.floor((random - 0.5) * 20)
+  }));
+}
+
+// 生成相关搜索查询
+function generateRelatedQueries(keyword: string, random: number): Array<{query: string, rise: number}> {
+  const queryMap: Record<string, string[]> = {
+    'shopping': ['best online shopping sites', 'shopping deals today', 'online shopping tips', 'shopping apps', 'shopping trends 2024'],
+    'online shopping': ['online shopping safety', 'best online stores', 'online shopping comparison', 'online shopping reviews', 'online shopping guide'],
+    'ecommerce': ['ecommerce platforms', 'ecommerce trends', 'ecommerce solutions', 'ecommerce marketing', 'ecommerce analytics'],
+    'retail': ['retail industry trends', 'retail technology', 'retail management', 'retail analytics', 'retail innovation'],
+    'store': ['store locator', 'store hours', 'store management', 'store design', 'store operations'],
+    'buy': ['buy online', 'buy now pay later', 'buying guide', 'buying tips', 'buying decisions'],
+    'purchase': ['purchase order', 'purchase history', 'purchase protection', 'purchase planning', 'purchase analysis'],
+    'deal': ['deal alerts', 'deal websites', 'deal finder', 'deal tracker', 'deal comparison'],
+    'sale': ['sale events', 'sale calendar', 'sale notifications', 'sale trends', 'sale analytics'],
+    'discount': ['discount codes', 'discount websites', 'discount apps', 'discount finder', 'discount alerts']
+  };
+  
+  const queries = queryMap[keyword.toLowerCase()] || [
+    `${keyword} guide`, `${keyword} tips`, `${keyword} trends`, `${keyword} reviews`, `${keyword} comparison`
+  ];
+  const riseValues = [1050, 1000, 300, 200, 170];
+  
+  return queries.slice(0, 5).map((query, index) => ({
+    query,
+    rise: riseValues[index] + Math.floor((random - 0.5) * 200)
+  }));
+}
+
 // 根据Google Trends分类获取相关关键词
 function getGoogleTrendsKeywords(category_key: string, country: string): string[] {
   // 获取分类信息
@@ -159,7 +209,9 @@ async function handle(req: Request) {
     console.log(`Total unique keywords to process: ${uniqueItems.length}`);
 
     const now = Date.now();
-    const spanMs = window_period === "30d" ? 30 * 24 * 3600 * 1000 : window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
+    const spanMs = window_period === "90d" ? 90 * 24 * 3600 * 1000 : 
+                   window_period === "30d" ? 30 * 24 * 3600 * 1000 : 
+                   window_period === "1d" ? 24 * 3600 * 1000 : 7 * 24 * 3600 * 1000;
     const startTime = new Date(now - spanMs);
 
     let ok = 0, fail = 0, skipped = 0;
@@ -195,6 +247,10 @@ async function handle(req: Request) {
         // 更真实的排名计算（Google Trends通常显示相对热度）
         rank = Math.max(1, Math.min(100, Math.round(100 - (score / 100) * 99)));
         dataPoints = Math.floor(30 + (random * 40)); // 模拟30-70个数据点
+        
+        // 生成相关搜索主题
+        const relatedTopics = generateRelatedTopics(kw, random);
+        const relatedQueries = generateRelatedQueries(kw, random);
         
         console.log(`Generated mock data for "${kw}": score=${score}, rank=${rank}, dataPoints=${dataPoints}`);
         
@@ -232,7 +288,9 @@ async function handle(req: Request) {
               keyword: kw,
               score: score,
               rank: rank,
-              note: "使用模拟数据，因为google-trends-api库存在兼容性问题"
+              related_topics: relatedTopics,
+              related_queries: relatedQueries,
+              note: "使用改进的模拟数据，包含相关主题和查询，更接近真实Google Trends趋势"
             }),
           ]
         );
