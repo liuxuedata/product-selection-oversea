@@ -89,7 +89,17 @@ async function handle(req: Request) {
 
   try {
     const gtrends = await import("google-trends-api");
-    const { trendingSearches, interestOverTime } = gtrends.default || gtrends;
+    console.log('gtrends module:', Object.keys(gtrends));
+    console.log('gtrends.default:', Object.keys(gtrends.default || {}));
+    
+    // 尝试不同的导入方式
+    const trendingSearches = gtrends.trendingSearches || gtrends.default?.trendingSearches;
+    const interestOverTime = gtrends.interestOverTime || gtrends.default?.interestOverTime;
+    
+    if (!trendingSearches || !interestOverTime) {
+      console.error('Failed to import google-trends-api functions');
+      return NextResponse.json({ ok: false, error: "Failed to import google-trends-api" }, { status: 500 });
+    }
     const mod = await import("pg");
     const { Client } = (mod as any).default || (mod as any);
 
