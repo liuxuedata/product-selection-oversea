@@ -236,13 +236,33 @@ export default function TrendsPage() {
     if (activeTab === "tiktok") {
       return TIKTOK_CATEGORIES;
     } else {
-      // Google Trends 分类
+      // Google Trends 分类 - 包含一级和二级分类
+      const allCategories: Array<{key: string, label: string, id: number, level: number}> = [];
+      
+      // 添加一级分类
       const topLevel = getTopLevelCategories();
-      return topLevel.map(cat => ({
-        key: cat.name,
-        label: cat.displayName,
-        id: cat.id
-      }));
+      topLevel.forEach(cat => {
+        allCategories.push({
+          key: cat.name,
+          label: cat.displayName,
+          id: cat.id,
+          level: 1
+        });
+        
+        // 添加二级分类
+        if (cat.children) {
+          cat.children.forEach(subCat => {
+            allCategories.push({
+              key: subCat.name,
+              label: `  └ ${subCat.displayName}`, // 用缩进表示层级
+              id: subCat.id,
+              level: 2
+            });
+          });
+        }
+      });
+      
+      return allCategories;
     }
   };
 
@@ -315,7 +335,14 @@ export default function TrendsPage() {
             className="border rounded px-2 py-1 min-w-[220px]"
           >
             {getCurrentCategories().map((c) => (
-              <option key={c.key} value={c.key}>
+              <option 
+                key={c.key} 
+                value={c.key}
+                style={{ 
+                  fontWeight: (c as any).level === 1 ? 'bold' : 'normal',
+                  color: (c as any).level === 1 ? '#000' : '#666'
+                }}
+              >
                 {c.label}
               </option>
             ))}
