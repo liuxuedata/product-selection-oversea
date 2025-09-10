@@ -128,23 +128,23 @@ async function handle(req: Request) {
     // 获取Google Trends数据
     const items: string[] = [];
     
-    // 1. 获取trending searches
+    // 1. 获取trending searches - 暂时跳过，因为API服务不稳定
     try {
-      console.log(`Fetching trending searches for country: ${country}`);
-      const trending = await trendingSearches({ geo: country });
-      console.log('Trending searches response:', trending.substring(0, 500) + '...');
+      console.log(`Skipping trending searches for country: ${country} - API service unstable`);
+      // const trending = await trendingSearches({ geo: country });
+      // console.log('Trending searches response:', trending.substring(0, 500) + '...');
       
-      const obj = JSON.parse(trending);
-      const arr = obj?.default?.trendingSearchesDays?.[0]?.trendingSearches ?? [];
-      console.log(`Found ${arr.length} trending searches`);
+      // const obj = JSON.parse(trending);
+      // const arr = obj?.default?.trendingSearchesDays?.[0]?.trendingSearches ?? [];
+      // console.log(`Found ${arr.length} trending searches`);
       
-      for (const it of arr) {
-        const kw = it?.title?.query;
-        if (kw && typeof kw === "string") {
-          items.push(kw.trim());
-          console.log(`Added trending keyword: ${kw.trim()}`);
-        }
-      }
+      // for (const it of arr) {
+      //   const kw = it?.title?.query;
+      //   if (kw && typeof kw === "string") {
+      //     items.push(kw.trim());
+      //     console.log(`Added trending keyword: ${kw.trim()}`);
+      //   }
+      // }
     } catch (e) {
       console.error('Failed to get trending searches:', e);
     }
@@ -168,8 +168,9 @@ async function handle(req: Request) {
     for (const kw of uniqueItems) {
       try {
         console.log(`Processing keyword: ${kw} for ${country}`);
+        // 使用trendData函数获取趋势数据
         const res = await interestOverTime({
-          keyword: kw,
+          keyword: [kw], // trendData需要数组格式
           startTime,
           endTime: new Date(),
           geo: country,
