@@ -89,6 +89,7 @@ async function handle(req: Request) {
 
   try {
     const gtrends = await import("google-trends-api");
+    const { trendingSearches, interestOverTime } = gtrends.default || gtrends;
     const mod = await import("pg");
     const { Client } = (mod as any).default || (mod as any);
 
@@ -119,7 +120,7 @@ async function handle(req: Request) {
     // 1. 获取trending searches
     try {
       console.log(`Fetching trending searches for country: ${country}`);
-      const trending = await gtrends.default.trendingSearches({ geo: country });
+      const trending = await trendingSearches({ geo: country });
       console.log('Trending searches response:', trending.substring(0, 500) + '...');
       
       const obj = JSON.parse(trending);
@@ -156,7 +157,7 @@ async function handle(req: Request) {
     for (const kw of uniqueItems) {
       try {
         console.log(`Processing keyword: ${kw} for ${country}`);
-        const res = await gtrends.default.interestOverTime({
+        const res = await interestOverTime({
           keyword: kw,
           startTime,
           endTime: new Date(),
