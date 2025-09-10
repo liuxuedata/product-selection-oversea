@@ -92,10 +92,13 @@ async function handle(req: Request) {
     const gtrends = require("google-trends-api");
     console.log('gtrends module keys:', Object.keys(gtrends));
     
-    const { trendingSearches, interestOverTime } = gtrends;
+    // 根据实际的API结构使用正确的函数
+    const trendingSearches = gtrends.hotTrends || gtrends.trendingSearches;
+    const interestOverTime = gtrends.trendData || gtrends.interestOverTime;
     
     if (!trendingSearches || !interestOverTime) {
       console.error('Failed to import google-trends-api functions');
+      console.error('Available functions:', Object.keys(gtrends));
       return NextResponse.json({ ok: false, error: "Failed to import google-trends-api" }, { status: 500 });
     }
     const mod = await import("pg");
