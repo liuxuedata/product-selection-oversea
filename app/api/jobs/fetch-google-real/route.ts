@@ -99,13 +99,12 @@ async function handle(req: Request) {
 
   try {
     // 首先检查 Playwright 浏览器是否可用
-    let browser;
     try {
-      browser = await chromium.launch({ 
+      const testBrowser = await chromium.launch({ 
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
-      await browser.close();
+      await testBrowser.close();
       console.log('Playwright browser is available');
     } catch (browserError) {
       console.error('Playwright browser not available:', browserError);
