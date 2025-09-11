@@ -98,6 +98,26 @@ async function handle(req: Request) {
   if (!dsn) return NextResponse.json({ ok: false, error: "Missing PG DSN" }, { status: 500 });
 
   try {
+    // 首先检查 Playwright 浏览器是否可用
+    let browser;
+    try {
+      browser = await chromium.launch({ 
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+      await browser.close();
+      console.log('Playwright browser is available');
+    } catch (browserError) {
+      console.error('Playwright browser not available:', browserError);
+      return NextResponse.json({ 
+        ok: false, 
+        error: "Playwright browser not installed or not available",
+        details: String(browserError?.message || browserError),
+        suggestion: "Please ensure Playwright is properly installed with: npx playwright install chromium",
+        fallback: "Try using Google-HTTP or Google-Mock data collection instead"
+      }, { status: 500 });
+    }
+
     const mod = await import("pg");
     const { Client } = (mod as any).default || (mod as any);
 

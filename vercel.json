@@ -1,1 +1,0 @@
-{"functions":{"app/api/jobs/fetch-google-real/route.ts":{"maxDuration":60},"app/api/jobs/fetch-google-http/route.ts":{"maxDuration":60},"app/api/jobs/fetch-google/route.ts":{"maxDuration":30},"app/api/jobs/fetch-tiktok/route.ts":{"maxDuration":60}},"buildCommand":"npm run build && npx playwright install chromium","installCommand":"npm install && npx playwright install chromium"}
