@@ -74,8 +74,11 @@ function getTimeframeParam(timeframe: string): string {
   return `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')} ${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
-// 使用HTTP请求获取Google Trends数据
-async function fetchGoogleTrendsViaHttp(keyword: string, country: string, timeframe: string) {
+// 使用HTTP请求获取Google Trends数据（带重试逻辑）
+async function fetchGoogleTrendsViaHttp(keyword: string, country: string, timeframe: string, retryCount = 0): Promise<any> {
+  const maxRetries = 3;
+  const baseDelay = 2000; // 2秒基础延迟
+  
   try {
     // 尝试使用Google Trends的内部API
     const apiUrl = 'https://trends.google.com/trends/api/explore';
@@ -95,13 +98,22 @@ async function fetchGoogleTrendsViaHttp(keyword: string, country: string, timefr
 
     const response = await fetch(`${apiUrl}?${params.toString()}`, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'application/json',
-        'Referer': 'https://trends.google.com/'
+        'Referer': 'https://trends.google.com/',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache'
       }
     });
 
     if (!response.ok) {
+      if (response.status === 429 && retryCount < maxRetries) {
+        // 429 错误，等待更长时间后重试
+        const delay = baseDelay * Math.pow(2, retryCount) + Math.random() * 1000;
+        console.log(`Rate limited (429), waiting ${delay}ms before retry ${retryCount + 1}/${maxRetries} for ${keyword}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return fetchGoogleTrendsViaHttp(keyword, country, timeframe, retryCount + 1);
+      }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
@@ -252,8 +264,8 @@ async function handle(req: Request) {
           console.log(`No data found for keyword: ${keyword}`);
         }
         
-        // 添加延迟避免被限制
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 添加延迟避免被限制（增加到3秒）
+        await new Promise(resolve => setTimeout(resolve, 3000));
       } catch (error) {
         console.error(`Failed to process keyword ${keyword}:`, error);
         failCount++;
