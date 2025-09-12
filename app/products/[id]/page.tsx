@@ -1,4 +1,5 @@
 import ScoreBadge from "@/components/ScoreBadge";
+import AiReview from "@/components/AiReview";
 
 async function getData(id: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/row/${id}`, {
@@ -65,6 +66,8 @@ export default async function ProductDetail({ params }: { params: { id: string }
           </ul>
         </div>
       </div>
+
+      <AiReview product={p} />
     </div>
   );
 }
