@@ -1,4 +1,5 @@
 import React from "react";
+import SystemConfig from "@/components/SystemConfig";
 
 const independentRows = [
   ["价格", "0.08", "400美金", "400+满分，逐级递减"],
@@ -92,6 +93,11 @@ export default function ConfigPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-2">系统配置</h2>
+        <SystemConfig />
       </section>
     </div>
   );
