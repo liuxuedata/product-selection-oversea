@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "Amazon 模块接口合集",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Amazon 模块相关 API\n\n字段分类及中文翻译:\n- 通用参数: baseUrl(基础地址), marketplace_id(市场 ID), reportId(报告 ID)\n- 报告操作: report-create(创建报告), report-poll(轮询报告状态), report-download(下载报告), upsert(写入数据库)\n- 定时任务: cron-daily(每日任务)"
+  },
+  "item": [
+    {
+      "name": "报告创建",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/amazon/report-create",
+        "description": "创建报告\n参数: marketplace_id (市场 ID, 例如 ATVPDKIKX0DER)"
+      }
+    },
+    {
+      "name": "报告轮询",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/amazon/report-poll?reportId={{reportId}}",
+        "description": "轮询报告状态\n参数: reportId (报告 ID)"
+      }
+    },
+    {
+      "name": "报告下载",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/amazon/report-download?reportId={{reportId}}",
+        "description": "下载报告\n参数: reportId (报告 ID)"
+      }
+    },
+    {
+      "name": "数据写入",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/amazon/upsert",
+        "description": "将报告数据写入数据库"
+      }
+    },
+    {
+      "name": "每日定时任务",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/amazon/cron-daily",
+        "description": "触发每日任务"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string", "description": "基础地址" },
+    { "key": "marketplace_id", "value": "ATVPDKIKX0DER", "type": "string", "description": "市场 ID" },
+    { "key": "reportId", "value": "", "type": "string", "description": "报告 ID" }
+  ]
+}
