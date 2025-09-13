@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import { useRouter } from "next/navigation";
 
 type Product = {
   id: string;
@@ -47,6 +48,7 @@ export default function ProductsPage() {
     category: '',
   });
   const [filters, setFilters] = useState(draft);
+  const router = useRouter();
 
   useEffect(() => {
     async function loadCategories() {
@@ -120,6 +122,15 @@ export default function ProductsPage() {
       setSortKey(key);
       setSortDir('asc');
     }
+  }
+
+  function handleRowDoubleClick(
+    e: React.MouseEvent<HTMLTableRowElement>,
+    id: string
+  ) {
+    const cell = (e.target as HTMLElement).closest('td');
+    if (cell && (cell as HTMLTableCellElement).cellIndex === 0) return;
+    router.push(`/products/${id}`);
   }
 
   const sorted = [...items];
@@ -277,6 +288,7 @@ export default function ProductsPage() {
               <tr
                 key={p.id}
                 className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
+                onDoubleClick={(e) => handleRowDoubleClick(e, p.id)}
               >
                   <td className="p-2" style={{ width: 150 }}>
                     {p.url ? (
