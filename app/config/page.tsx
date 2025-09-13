@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { providers, defaultProvider } from "@/lib/ai/providers";
 
 const independentRows = [
   ["价格", "0.08", "400美金", "400+满分，逐级递减"],
@@ -45,6 +48,36 @@ const platformRows = [
 ];
 
 export default function ConfigPage() {
+  const providerNames = Object.keys(providers);
+  const [provider, setProvider] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("aiProvider") || defaultProvider;
+    }
+    return defaultProvider;
+  });
+  const [model, setModel] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return (
+        localStorage.getItem("aiModel") || providers[defaultProvider].models[0]
+      );
+    }
+    return providers[defaultProvider].models[0];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("aiProvider", provider);
+    const first = providers[provider]?.models[0];
+    if (!providers[provider].models.includes(model)) {
+      setModel(first);
+    }
+  }, [provider]);
+
+  useEffect(() => {
+    if (model) {
+      localStorage.setItem("aiModel", model);
+    }
+  }, [model]);
+
   return (
     <div className="p-6 space-y-10">
       <h1 className="text-2xl font-semibold">评分配置说明</h1>
@@ -92,6 +125,34 @@ export default function ConfigPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-2">系统配置</h2>
+        <div className="flex gap-2 text-sm">
+          <select
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+            className="border p-1 rounded"
+          >
+            {providerNames.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="border p-1 rounded"
+          >
+            {providers[provider].models.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
     </div>
   );

@@ -1,0 +1,58 @@
+{
+  "info": {
+    "name": "Amazon Reports",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "亚马逊报告接口集合"
+  },
+  "item": [
+    {
+      "name": "report-create 创建报告",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/amazon/report-create",
+        "description": "创建报告\n- marketplaceId: 市场编号"
+      }
+    },
+    {
+      "name": "report-poll 查询状态",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/amazon/report-poll?reportId={{report_id}}",
+        "description": "轮询报告状态\n- reportId: 报告编号"
+      }
+    },
+    {
+      "name": "report-download 下载报告",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/amazon/report-download?reportId={{report_id}}",
+        "description": "下载报告\n- reportId: 报告编号"
+      }
+    },
+    {
+      "name": "upsert 写入数据",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/amazon/upsert",
+        "description": "写入报告数据\n- rows: 数据行数组"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "基础地址"
+    },
+    {
+      "key": "marketplace_id",
+      "value": "ATVPDKIKX0DER",
+      "description": "亚马逊市场ID"
+    },
+    {
+      "key": "report_id",
+      "value": "",
+      "description": "报告编号"
+    }
+  ]
+}
