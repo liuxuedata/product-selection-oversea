@@ -14,6 +14,8 @@ Environment variables:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 OPENAI_API_KEY=
+# Legacy name also supported: AI_API_KEY
+# AI_API_KEY=
 # OPENAI_API_BASE=https://api.openai.com/v1
 ```
 

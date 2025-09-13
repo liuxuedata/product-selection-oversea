@@ -34,6 +34,14 @@ export async function POST(req: Request) {
         ],
       }),
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("AI provider error", res.status, errText);
+      return NextResponse.json(
+        { error: "AI review failed" },
+        { status: 500 }
+      );
+    }
     const data = await res.json();
     const review = data?.choices?.[0]?.message?.content || "无法获取点评";
     return NextResponse.json({ review });
