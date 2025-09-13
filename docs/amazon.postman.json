@@ -1,0 +1,81 @@
+{
+  "info": {
+    "name": "Amazon 模块",
+    "description": "亚马逊模块 API 调用示例",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Report - Create 创建报告",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"marketplaceId\": \"ATVPDKIKX0DER\",\n  \"reportType\": \"GET_MERCHANT_LISTINGS_ALL_DATA\"\n}"
+        },
+        "url": "{{baseUrl}}/api/amazon/report-create",
+        "description": "参数分类:\n- 基本信息\n  - marketplaceId: 市场ID\n  - reportType: 报告类型"
+      }
+    },
+    {
+      "name": "Report - Poll 查询报告状态",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/amazon/report-poll?reportId=<报告ID>",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "amazon", "report-poll"],
+          "query": [
+            { "key": "reportId", "value": "<报告ID>", "description": "报告ID" }
+          ]
+        },
+        "description": "查询报告生成状态"
+      }
+    },
+    {
+      "name": "Report - Download 下载报告",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/amazon/report-download?documentId=<文档ID>",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "amazon", "report-download"],
+          "query": [
+            { "key": "documentId", "value": "<文档ID>", "description": "报告文档ID" }
+          ]
+        },
+        "description": "下载并获取报告内容"
+      }
+    },
+    {
+      "name": "Report - Upsert 写入数据",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"marketplaceId\": \"ATVPDKIKX0DER\",\n  \"rows\": []\n}"
+        },
+        "url": "{{baseUrl}}/api/amazon/report-upsert",
+        "description": "参数分类:\n- 基本信息\n  - marketplaceId: 市场ID\n- 数据\n  - rows: 数据行数组"
+      }
+    },
+    {
+      "name": "Cron Daily 日常任务",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/amazon/cron-daily",
+        "description": "触发每日任务"
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" }
+  ]
+}
+
