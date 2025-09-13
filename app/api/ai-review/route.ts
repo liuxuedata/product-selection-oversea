@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
+import { providers } from "@/lib/ai/providers";
 
 export async function POST(req: Request) {
-  const { product } = await req.json();
-  const apiKey = process.env.AI_API_KEY;
-  const apiBase = process.env.AI_API_BASE || "https://api.openai.com/v1";
-  const model = process.env.AI_MODEL || "gpt-5.0";
+  const { product, provider: providerKey = "openai", model } = await req.json();
+  const provider = providers[providerKey];
 
-  if (!apiKey) {
+  if (!provider || !provider.apiKey) {
     return NextResponse.json(
-      { error: "AI_API_KEY not configured" },
+      { error: "AI provider not configured" },
       { status: 500 }
     );
   }
 
+  const modelName = model || provider.models[0];
   const prompt = `请作为选品专家点评并推荐以下产品:\n${JSON.stringify(
     product,
     null,
@@ -20,14 +20,14 @@ export async function POST(req: Request) {
   )}`;
 
   try {
-    const res = await fetch(`${apiBase}/chat/completions`, {
+    const res = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${provider.apiKey}`,
       },
       body: JSON.stringify({
-        model,
+        model: modelName,
         messages: [
           { role: "system", content: "你是一位选品专家，提供点评和推荐。" },
           { role: "user", content: prompt },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Props = {
   product: any;
@@ -9,6 +9,15 @@ type Props = {
 export default function AiReview({ product }: Props) {
   const [loading, setLoading] = useState(false);
   const [review, setReview] = useState("");
+  const [provider, setProvider] = useState("openai");
+  const [model, setModel] = useState("");
+
+  useEffect(() => {
+    const p = localStorage.getItem("ai_provider");
+    const m = localStorage.getItem("ai_model");
+    if (p) setProvider(p);
+    if (m) setModel(m);
+  }, []);
 
   async function handleGenerate() {
     setLoading(true);
@@ -16,7 +25,7 @@ export default function AiReview({ product }: Props) {
       const res = await fetch("/api/ai-review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product }),
+        body: JSON.stringify({ product, provider, model }),
       }).then((r) => r.json());
       setReview(res.review || "暂无点评");
     } catch (e) {
