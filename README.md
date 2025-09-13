@@ -13,7 +13,11 @@ Environment variables:
 ```
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+OPENAI_API_BASE=https://api.openai.com/v1
+OPENAI_API_KEY=
 ```
+
+AI 模型可在 `/config` 页面选择，支持扩展到不同提供商与模型。
 # UI 指令
 请基于 `/designs/AntDesign Pro 4.0.sketch` 的设计规范，为以下功能开发页面：
 

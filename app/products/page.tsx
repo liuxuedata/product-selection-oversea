@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import { useRouter } from "next/navigation";
 
 type Product = {
   id: string;
@@ -47,6 +48,7 @@ export default function ProductsPage() {
     category: '',
   });
   const [filters, setFilters] = useState(draft);
+  const router = useRouter();
 
   useEffect(() => {
     async function loadCategories() {
@@ -120,6 +122,15 @@ export default function ProductsPage() {
       setSortKey(key);
       setSortDir('asc');
     }
+  }
+
+  function handleRowDoubleClick(
+    e: React.MouseEvent<HTMLTableRowElement>,
+    id: string
+  ) {
+    const cell = (e.target as HTMLElement).closest('td');
+    if (cell && (cell as HTMLTableCellElement).cellIndex === 0) return;
+    router.push(`/products/${id}`);
   }
 
   const sorted = [...items];
@@ -269,6 +280,7 @@ export default function ProductsPage() {
               {renderHeader('平台评分', 'platform_score')}
               {renderHeader('独立站评分', 'independent_score')}
               {renderHeader('录入时间', 'import_at')}
+              <th className="p-2">详情</th>
             </tr>
           </thead>
           <tbody>
@@ -276,6 +288,7 @@ export default function ProductsPage() {
               <tr
                 key={p.id}
                 className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
+                onDoubleClick={(e) => handleRowDoubleClick(e, p.id)}
               >
                   <td className="p-2" style={{ width: 150 }}>
                     {p.url ? (
@@ -343,11 +356,19 @@ export default function ProductsPage() {
                     ? new Date(p.import_at).toLocaleString()
                     : '-'}
                 </td>
+                <td className="p-2">
+                  <a
+                    href={`/products/${p.id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    查看
+                  </a>
+                </td>
               </tr>
             ))}
             {!display.length && (
               <tr>
-                <td className="p-2 text-center" colSpan={20}>
+                <td className="p-2 text-center" colSpan={21}>
                   暂无数据
                 </td>
               </tr>

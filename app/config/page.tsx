@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { providers } from "@/lib/ai/providers";
 
 const independentRows = [
   ["价格", "0.08", "400美金", "400+满分，逐级递减"],
@@ -45,6 +48,24 @@ const platformRows = [
 ];
 
 export default function ConfigPage() {
+  const defaultProvider = Object.keys(providers)[0];
+  const [provider, setProvider] = useState(defaultProvider);
+  const [model, setModel] = useState(providers[defaultProvider].models[0]);
+
+  useEffect(() => {
+    const savedProvider = localStorage.getItem("aiProvider");
+    const savedModel = localStorage.getItem("aiModel");
+    if (savedProvider && providers[savedProvider]) {
+      setProvider(savedProvider);
+      setModel(savedModel || providers[savedProvider].models[0]);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("aiProvider", provider);
+    localStorage.setItem("aiModel", model);
+  }, [provider, model]);
+
   return (
     <div className="p-6 space-y-10">
       <h1 className="text-2xl font-semibold">评分配置说明</h1>
@@ -92,6 +113,44 @@ export default function ConfigPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-2">系统配置</h2>
+        <div className="space-y-2 text-sm">
+          <div>
+            <label className="mr-2">AI 提供商</label>
+            <select
+              className="border p-1 rounded"
+              value={provider}
+              onChange={(e) => {
+                const p = e.target.value;
+                setProvider(p);
+                setModel(providers[p].models[0]);
+              }}
+            >
+              {Object.keys(providers).map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mr-2">模型</label>
+            <select
+              className="border p-1 rounded"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              {providers[provider].models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </section>
     </div>
   );
