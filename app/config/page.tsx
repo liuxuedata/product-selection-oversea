@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { providers } from "@/lib/ai/providers";
 
 const independentRows = [
   ["价格", "0.08", "400美金", "400+满分，逐级递减"],
@@ -45,6 +48,29 @@ const platformRows = [
 ];
 
 export default function ConfigPage() {
+  const entries = Object.entries(providers);
+  const [provider, setProvider] = useState(entries[0][0]);
+  const [model, setModel] = useState(entries[0][1].models[0]);
+
+  useEffect(() => {
+    const p = localStorage.getItem("ai_provider");
+    const m = localStorage.getItem("ai_model");
+    if (p && providers[p]) setProvider(p);
+    if (m) setModel(m);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("ai_provider", provider);
+    const firstModel = providers[provider].models[0];
+    if (!providers[provider].models.includes(model)) {
+      setModel(firstModel);
+    }
+  }, [provider]);
+
+  useEffect(() => {
+    localStorage.setItem("ai_model", model);
+  }, [model]);
+
   return (
     <div className="p-6 space-y-10">
       <h1 className="text-2xl font-semibold">评分配置说明</h1>
@@ -92,6 +118,43 @@ export default function ConfigPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-2">系统配置</h2>
+        <div className="flex flex-wrap gap-4 items-center text-sm">
+          <label className="flex items-center gap-2">
+            <span>服务商</span>
+            <select
+              className="border p-1 rounded"
+              value={provider}
+              onChange={(e) => setProvider(e.target.value)}
+            >
+              {entries.map(([key, cfg]) => (
+                <option key={key} value={key}>
+                  {cfg.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            <span>模型</span>
+            <select
+              className="border p-1 rounded"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            >
+              {providers[provider].models.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          API 密钥请在环境变量中配置
+        </p>
       </section>
     </div>
   );
