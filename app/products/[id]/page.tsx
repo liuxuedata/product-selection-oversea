@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ScoreBadge from "@/components/ScoreBadge";
 import AiReview from "@/components/AiReview";
@@ -19,10 +20,38 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-semibold">{product.title || "产品详情"}</h1>
+      {product.image_url && (
+        <div className="relative w-48 h-48">
+          <Image
+            src={product.image_url}
+            alt={product.title || "product image"}
+            fill
+            className="object-contain rounded"
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div>ASIN: {product.asin || "-"}</div>
         <div>品牌: {product.brand || "-"}</div>
         <div>价格: {product.price ?? "-"}</div>
+        <div>
+          链接: {product.url ? (
+            <a
+              href={product.url}
+              className="text-blue-600 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              查看
+            </a>
+          ) : (
+            "-"
+          )}
+        </div>
+        <div>评价数: {product.review_count ?? "-"}</div>
+        <div>评分: {product.review_rating ?? "-"}</div>
+        <div>卖家数量: {product.seller_count ?? "-"}</div>
+        <div>图片数量: {product.image_count ?? "-"}</div>
         <div>
           平台评分: <ScoreBadge value={product.platform_score ?? 0} />
         </div>
