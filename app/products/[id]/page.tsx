@@ -27,6 +27,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               src={product.image_url}
               alt={product.title || "产品图片"}
               fill
+              unoptimized
               className="object-contain rounded"
             />
           </div>
@@ -45,6 +46,10 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             尺寸: {product.length ?? "-"} x {product.width ?? "-"} x {product.height ?? "-"}
           </div>
           <div>重量: {product.weight ?? "-"}</div>
+          <div>发布日期: {product.created_at ? new Date(product.created_at).toLocaleDateString() : "-"}</div>
+          <div>ASIN 销量: {product.asin_sales ?? "-"}</div>
+          <div>销量趋势(90天): {product.sales_trend_90d ?? "-"}</div>
+          <div>价格趋势(90天): {product.price_trend_90d ?? "-"}</div>
           <div>
             平台评分: <ScoreBadge value={product.platform_score ?? 0} />
           </div>
