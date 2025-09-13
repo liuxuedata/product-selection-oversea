@@ -1,70 +1,66 @@
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 import ScoreBadge from "@/components/ScoreBadge";
+import AiReview from "@/components/AiReview";
 
-async function getData(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/row/${id}`, {
-    cache: "no-store",
-  });
-  const data = await res.json();
-  return data.row;
+async function fetchProduct(id: string) {
+  const { data } = await supabase
+    .from("v_blackbox_rows_with_scores")
+    .select("*")
+    .eq("row_id", id)
+    .maybeSingle();
+  return data;
 }
 
-export default async function ProductDetail({ params }: { params: { id: string } }) {
-  const p = await getData(params.id);
-  if (!p) return <div className="p-6">未找到该产品</div>;
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const product = await fetchProduct(params.id);
+  if (!product) return notFound();
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        {p.image_url ? (
-          <img
-            src={p.image_url}
-            className="w-20 h-20 rounded object-cover"
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-semibold">{product.title || "产品详情"}</h1>
+      {product.image_url && (
+        <div className="relative w-60 h-60">
+          <Image
+            src={product.image_url}
+            alt={product.title || "product image"}
+            fill
+            className="object-contain"
           />
-        ) : null}
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">{p.title}</h1>
-          <div className="mt-2 flex gap-2">
-            <ScoreBadge value={p.platform_score} />
-            <ScoreBadge value={p.independent_score} />
-          </div>
-          {p.url && (
+        </div>
+      )}
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>ASIN: {product.asin || "-"}</div>
+        <div>品牌: {product.brand || "-"}</div>
+        <div>价格: {product.price ?? "-"}</div>
+        <div>分类: {product.category || "-"}</div>
+        <div>评价数: {product.review_count ?? "-"}</div>
+        <div>评价星级: {product.review_rating ?? "-"}</div>
+        <div>运输: {product.shipping || "-"}</div>
+        <div>
+          平台评分: <ScoreBadge value={product.platform_score ?? 0} />
+        </div>
+        <div>
+          独立站评分: <ScoreBadge value={product.independent_score ?? 0} />
+        </div>
+        <div>
+          商品链接:
+          {product.url ? (
             <a
-              href={p.url}
+              href={product.url}
+              className="text-blue-600 underline ml-1"
               target="_blank"
-              className="text-sm underline text-[var(--muted-foreground)]"
+              rel="noopener noreferrer"
             >
-              查看原始链接
+              查看
             </a>
+          ) : (
+            "-"
           )}
         </div>
       </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="border border-[var(--border)] rounded p-4">
-          <h2 className="font-semibold mb-3">基础信息</h2>
-          <ul className="text-sm space-y-2">
-            <li>ASIN：{p.asin}</li>
-            <li>品牌：{p.brand}</li>
-            <li>价格：{p.price}</li>
-            <li>评论：{p.review_count} / {p.review_rating}</li>
-            <li>
-              录入时间：
-              {p.import_at || p.created_at
-                ? new Date(p.import_at || p.created_at).toLocaleString()
-                : '-'}
-            </li>
-          </ul>
-        </div>
-        <div className="border border-[var(--border)] rounded p-4">
-          <h2 className="font-semibold mb-3">更多指标</h2>
-          <ul className="text-sm space-y-2">
-            <li>配送方式：{p.shipping}</li>
-            <li>卖家国家/地区：{p.seller_country}</li>
-            <li>活跃卖家数量：{p.active_seller_count}</li>
-            <li>年龄（月）：{p.age_months}</li>
-          </ul>
-        </div>
-      </div>
+      <AiReview product={product} />
     </div>
   );
 }
