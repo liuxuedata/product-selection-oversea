@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import ScoreBadge from "@/components/ScoreBadge";
+import { useRouter } from "next/navigation";
 
 type Product = {
   id: string;
@@ -53,6 +54,7 @@ export default function RecommendationsPage() {
     seller: '',
   });
   const [filters, setFilters] = useState<Filters>({ ...draft });
+  const router = useRouter();
 
   useEffect(() => {
     async function loadCategories() {
@@ -138,6 +140,15 @@ export default function RecommendationsPage() {
       setSortKey(key);
       setSortDir('asc');
     }
+  }
+
+  function handleRowDoubleClick(
+    e: React.MouseEvent<HTMLTableRowElement>,
+    id: string
+  ) {
+    const cell = (e.target as HTMLElement).closest('td');
+    if (cell && (cell as HTMLTableCellElement).cellIndex === 0) return;
+    router.push(`/products/${id}`);
   }
 
   const sorted = [...items];
@@ -268,6 +279,7 @@ export default function RecommendationsPage() {
             {renderHeader('平台评分', 'platform_score', 'text-right')}
             {renderHeader('独立站评分', 'independent_score', 'text-right')}
             {renderHeader('录入时间', 'import_at')}
+            <th className="p-2">详情</th>
           </tr>
         </thead>
         <tbody>
@@ -275,6 +287,7 @@ export default function RecommendationsPage() {
             <tr
               key={p.id}
               className="border-t border-[var(--border)] hover:bg-[var(--muted)]"
+              onDoubleClick={(e) => handleRowDoubleClick(e, p.id)}
             >
               <td className="p-2" style={{ width: 150 }}>
                 {p.url ? (
@@ -349,6 +362,14 @@ export default function RecommendationsPage() {
                 {p.import_at
                   ? new Date(p.import_at).toLocaleString()
                   : '-'}
+              </td>
+              <td className="p-2">
+                <a
+                  href={`/products/${p.id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  查看
+                </a>
               </td>
             </tr>
           ))}
