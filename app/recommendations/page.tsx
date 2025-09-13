@@ -268,6 +268,7 @@ export default function RecommendationsPage() {
             {renderHeader('平台评分', 'platform_score', 'text-right')}
             {renderHeader('独立站评分', 'independent_score', 'text-right')}
             {renderHeader('录入时间', 'import_at')}
+            <th className="p-2">详情</th>
           </tr>
         </thead>
         <tbody>
@@ -349,6 +350,14 @@ export default function RecommendationsPage() {
                 {p.import_at
                   ? new Date(p.import_at).toLocaleString()
                   : '-'}
+              </td>
+              <td className="p-2">
+                <a
+                  href={`/products/${p.id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  查看
+                </a>
               </td>
             </tr>
           ))}

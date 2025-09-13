@@ -93,6 +93,14 @@ export default function ConfigPage() {
           </tbody>
         </table>
       </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-2">系统配置</h2>
+        <p className="text-sm">
+          在 <code>.env.local</code> 中配置 <code>AI_API_BASE</code>、
+          <code>AI_API_KEY</code> 与 <code>AI_MODEL</code>，即可启用 AI 点评与推荐功能。
+        </p>
+      </section>
     </div>
   );
 }
